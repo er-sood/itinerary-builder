@@ -1,0 +1,28 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+
+model Itinerary {
+  id          String   @id @default(uuid())
+  clientName  String?
+  destination String
+  trip        Json
+  days        Json
+  inclusions  Json
+  exclusions  Json
+  pricing     Json
+
+  status      String   @default("DRAFT") // DRAFT | FINAL
+  finalizedAt DateTime?
+
+  createdBy   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
