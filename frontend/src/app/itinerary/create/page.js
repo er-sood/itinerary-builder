@@ -1,8 +1,11 @@
-import dynamic from "next/dynamic";
+export const dynamic = "force-dynamic";
 
-const CreateItineraryClient = dynamic(() => import("./CreateItineraryClient"), {
-  ssr: false,
-});
+import dynamicImport from "next/dynamic";
+
+const CreateItineraryClient = dynamicImport(
+  () => import("./CreateItineraryClient"),
+  { ssr: false }
+);
 
 export default function Page() {
   return <CreateItineraryClient />;
