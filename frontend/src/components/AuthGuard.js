@@ -2,31 +2,35 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { createClient } from "@supabase/supabase-js";
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+);
 
 export default function AuthGuard({ children }) {
   const router = useRouter();
-  const [loading, setLoading] = useState(true);
+  const [checking, setChecking] = useState(true);
 
   useEffect(() => {
-    async function checkAuth() {
-      const res = await fetch("/api/auth/me");
+    async function check() {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
 
-      if (!res.ok) {
+      if (!session) {
         router.replace("/login");
       } else {
-        setLoading(false);
+        setChecking(false);
       }
     }
 
-    checkAuth();
-  }, [router]);
+    check();
+  }, []);
 
-  if (loading) {
-    return (
-      <div className="p-6 text-gray-500">
-        Checking authentication...
-      </div>
-    );
+  if (checking) {
+    return null;
   }
 
   return children;

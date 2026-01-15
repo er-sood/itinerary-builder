@@ -1,104 +1,115 @@
 "use client";
+
 import Link from "next/link";
-import { useState, useRef, useEffect} from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { createClient } from "@supabase/supabase-js";
 
 import AppHeader from "@/components/AppHeader";
 
-import Image from "next/image";
-
-import AuthGuard from "@/components/AuthGuard";
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+);
 
 export default function DashboardPage() {
+  const router = useRouter();
   const [role, setRole] = useState(null);
 
   useEffect(() => {
     async function loadUser() {
-      const res = await fetch("/api/auth/me");
-      if (res.ok) {
-        const data = await res.json();
-        setRole(data.role);
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (!session) {
+        router.replace("/login");
+        return;
       }
+
+      const res = await fetch("/api/auth/me", {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+
+      if (!res.ok) {
+        router.replace("/login");
+        return;
+      }
+
+      const data = await res.json();
+      setRole(data.role);
     }
+
     loadUser();
   }, []);
 
   if (!role) {
     return (
-      <AuthGuard>
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-blue-100 to-blue-200">
-          <p className="text-gray-600">Loading dashboard…</p>
-        </div>
-      </AuthGuard>
+      <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-blue-100 to-blue-200">
+        <p className="text-gray-600">Loading dashboard…</p>
+      </main>
     );
   }
 
   return (
-    <AuthGuard>
-      <main className="min-h-screen flex flex-col bg-gradient-to-br from-blue-50 via-blue-100 to-blue-200 text-gray-900">
-        
-        {/* Header */}
-        <AppHeader />
+    <main className="min-h-screen flex flex-col bg-gradient-to-br from-blue-50 via-blue-100 to-blue-200 text-gray-900">
+      {/* Header */}
+      <AppHeader />
 
+      {/* Feature Cards */}
+      <section className="flex-1 px-8 py-16">
+        <div className="max-w-6xl mx-auto">
+          <h1 className="text-2xl font-semibold mb-12 text-center">
+            What would you like to do?
+          </h1>
 
-        {/* Feature Cards */}
-        <section className="flex-1 px-8 py-16">
-          <div className="max-w-6xl mx-auto">
-            <h1 className="text-2xl font-semibold mb-12 text-center">
-              What would you like to do?
-            </h1>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            <FeatureCard
+              title="Create Itinerary"
+              description="Build a new professional itinerary for a client"
+              icon="📝"
+              href="/itinerary/canvas"
+            />
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            <FeatureCard
+              title="Browse Itineraries"
+              description="Search and reuse existing itineraries"
+              icon="🔍"
+              href="/itineraries"
+            />
 
+            {role === "ADMIN" && (
               <FeatureCard
-  title="Create Itinerary"
-  description="Build a new professional itinerary for a client"
-  icon="📝"
-  href="/itinerary/canvas"
-/>
+                title="Staff Performance"
+                description="Track staff activity and productivity"
+                icon="👥"
+                href="/staff-performance"
+              />
+            )}
 
-<FeatureCard
-  title="Browse Itineraries"
-  description="Search and reuse existing itineraries"
-  icon="🔍"
-  href="/itineraries"
-/>
+            {role === "ADMIN" && (
+              <FeatureCard
+                title="Manage Users"
+                description="Create new users and delete existing users"
+                icon="➕"
+                href="/users"
+              />
+            )}
 
-{role === "ADMIN" && (
-  <FeatureCard
-    title="Staff Performance"
-    description="Track staff activity and productivity"
-    icon="👥"
-    href="/staff-performance"
-  />
-)}
-
-{role === "ADMIN" && (
-  <FeatureCard
-    title="Manage Users"
-    description="Create new users and delete existing users"
-    icon="➕"
-    href="/users"
-  />
-)}
-
-<FeatureCard
-  title="My Profile"
-  description="View and update your personal information"
-  icon="👤"
-  href="/profile"
-/>
-
-
-            </div>
+            <FeatureCard
+              title="My Profile"
+              description="View and update your personal information"
+              icon="👤"
+              href="/profile"
+            />
           </div>
-        </section>
-
-      </main>
-    </AuthGuard>
+        </div>
+      </section>
+    </main>
   );
 }
-
-
 
 function FeatureCard({ title, description, icon, href }) {
   const CardContent = (
@@ -107,13 +118,9 @@ function FeatureCard({ title, description, icon, href }) {
         {icon}
       </div>
 
-      <h3 className="text-lg font-semibold mb-2">
-        {title}
-      </h3>
+      <h3 className="text-lg font-semibold mb-2">{title}</h3>
 
-      <p className="text-sm text-gray-600">
-        {description}
-      </p>
+      <p className="text-sm text-gray-600">{description}</p>
     </div>
   );
 
@@ -127,4 +134,3 @@ function FeatureCard({ title, description, icon, href }) {
 
   return CardContent;
 }
-

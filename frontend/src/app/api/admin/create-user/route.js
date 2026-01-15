@@ -9,53 +9,54 @@ const supabaseAdmin = createClient(
 
 export async function POST(req) {
   try {
-    const { id, accessToken } = await req.json();
+    const { email, password, accessToken } = await req.json();
 
-    if (!id || !accessToken) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!email || !password || !accessToken) {
+      return NextResponse.json({ error: "Missing data" }, { status: 400 });
     }
 
-    // verify user
     const {
       data: { user },
       error,
     } = await supabaseAdmin.auth.getUser(accessToken);
 
     if (error || !user) {
-      return NextResponse.json({ error: "Invalid token" }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const itinerary = await prisma.itinerary.findUnique({
-      where: { id },
-    });
-
-    if (!itinerary) {
-      return NextResponse.json({ error: "Not found" }, { status: 404 });
-    }
-
-    // get role
     const dbUser = await prisma.user.findUnique({
       where: { id: user.id },
     });
 
-    const isAdmin = dbUser?.role === "ADMIN";
-    const isOwner = itinerary.createdBy === user.id;
-
-    if (!isAdmin && !isOwner) {
+    if (dbUser?.role !== "ADMIN") {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    await prisma.itinerary.update({
-      where: { id },
+    const { data: newUser, error: createError } =
+      await supabaseAdmin.auth.admin.createUser({
+        email,
+        password,
+        email_confirm: true,
+      });
+
+    if (createError) {
+      return NextResponse.json(
+        { error: createError.message },
+        { status: 400 }
+      );
+    }
+
+    await prisma.user.create({
       data: {
-        status: "FINAL",
-        finalizedAt: new Date(),
+        id: newUser.user.id,
+        email,
+        role: "STAFF",
       },
     });
 
     return NextResponse.json({ success: true });
-  } catch (error) {
-    console.error("FINALIZE ERROR:", error);
+  } catch (err) {
+    console.error("CREATE USER ERROR", err);
     return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }

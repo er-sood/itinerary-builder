@@ -4,8 +4,9 @@ import { useSearchParams, useRouter } from "next/navigation";
 
 import { useState, useRef, useEffect } from "react";
 
-import AppHeader from "@/components/AppHeader";
+import { supabase } from "@/lib/supabaseClient";
 
+import AppHeader from "@/components/AppHeader";
 
 
 
@@ -21,6 +22,8 @@ export default function ItineraryCanvasPage() {
 
   /* ---------------- PACKAGE LEVEL ---------------- */
 
+  
+
 const searchParams = useSearchParams();
 const itineraryId = searchParams.get("id");
 
@@ -29,6 +32,7 @@ const [status, setStatus] = useState("DRAFT");
   const [client, setClient] = useState({
   name: "",
 });
+const isFinal = status === "FINAL";
 
 
   const [trip, setTrip] = useState({
@@ -72,7 +76,7 @@ const router = useRouter();
 const titleRef = useRef(null);
 const prevDayRef = useRef(activeDay);
 const [descriptionDraft, setDescriptionDraft] = useState("");
-const [isEditingDescription, setIsEditingDescription] = useState(false);
+
 
 
 
@@ -122,6 +126,8 @@ useEffect(() => {
     prevDayRef.current = activeDay;
   }
 }, [activeDay, days]);
+
+
 
 
 
@@ -231,24 +237,43 @@ useEffect(() => {
   useEffect(() => {
   if (!itineraryId) return;
 
-  async function loadItinerary() {
-    try {
-      const res = await fetch(`/api/itinerary/${itineraryId}`);
-      if (!res.ok) return;
+async function loadItinerary() {
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
 
-      const data = await res.json();
-
-      setClient({ name: data.clientName || "" });
-      setTrip(data.trip || {});
-      setDays(data.days || []);
-      setInclusions(data.inclusions || []);
-      setExclusions(data.exclusions || []);
-      setPricing(data.pricing || {});
-      setStatus(data.status || "DRAFT");
-    } catch (err) {
-      console.error("LOAD ITINERARY ERROR", err);
-    }
+  if (!session) {
+    console.log("No session found");
+    return;
   }
+
+  const res = await fetch(`/api/itinerary/${itineraryId}`, {
+    headers: {
+      Authorization: `Bearer ${session.access_token}`,
+    },
+  });
+
+ if (!res.ok) {
+  const err = await res.json();
+  console.error("Load itinerary failed:", res.status, err);
+  alert("Failed to load itinerary");
+  return;
+}
+
+
+  const data = await res.json();
+
+  console.log("Loaded itinerary:", data); // ✅ debug
+
+  setClient({ name: data.clientName || "" });
+  setTrip(data.trip || {});
+  setDays(data.days || []);
+  setInclusions(data.inclusions || []);
+  setExclusions(data.exclusions || []);
+  setPricing(data.pricing || {});
+  setStatus(data.status || "DRAFT");
+}
+
 
   loadItinerary();
 }, [itineraryId]);
@@ -260,17 +285,30 @@ async function handleFinalize() {
 
   if (!confirmed) return;
 
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  if (!session) {
+    alert("Not logged in");
+    return;
+  }
+
   const res = await fetch("/api/itinerary/finalize", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ id: itineraryId }),
+    body: JSON.stringify({
+      id: itineraryId,
+      accessToken: session.access_token,
+    }),
   });
 
   if (res.ok) {
     alert("Itinerary finalized successfully");
     setStatus("FINAL");
   } else {
-    alert("Failed to finalize itinerary");
+    const data = await res.json();
+    alert(data.error || "Failed to finalize itinerary");
   }
 }
 
@@ -278,27 +316,41 @@ async function handleFinalize() {
 
 async function saveItinerary(data) {
   try {
+    // 1. get logged-in user session
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    if (!session) {
+      alert("You are not logged in");
+      return;
+    }
+
+    // 2. send token to backend
     const res = await fetch("/api/itinerary/save", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
+      body: JSON.stringify({
+        ...data,
+        itineraryId, // for update
+        accessToken: session.access_token, // 🔐 IMPORTANT
+      }),
     });
 
     const result = await res.json();
 
     if (result.success) {
       alert("Itinerary saved successfully");
-
-      // move to edit mode
       router.push(`/itinerary/canvas?id=${result.itineraryId}`);
     } else {
-      alert("Failed to save itinerary");
+      alert(result.error || "Failed to save itinerary");
     }
   } catch (err) {
     console.error(err);
     alert("Error while saving itinerary");
   }
 }
+
 
 
 
@@ -345,31 +397,39 @@ async function saveItinerary(data) {
     <div className="mt-12 flex justify-end gap-4">
       
       <button
-        onClick={() =>
-          saveItinerary({ days, inclusions, exclusions, pricing, trip, client })
+  disabled={status === "FINAL"}
+  onClick={() =>
+    saveItinerary({
+      itineraryId,
+      days,
+      inclusions,
+      exclusions,
+      pricing,
+      trip,
+      client,
+    })
+  }
+  className={`px-6 py-2 rounded-lg text-white ${
+    status === "FINAL"
+      ? "bg-gray-400 cursor-not-allowed"
+      : "bg-gray-800 hover:bg-gray-900"
+  }`}
+>
+  💾 Save Itinerary
+</button>
+</div>
 
 
-        }
-        className="px-6 py-2 rounded-lg bg-gray-800 text-white hover:bg-gray-900"
-      >
-        💾 Save Itinerary
-      </button>
-
-      <button
-        onClick={() =>
-          downloadPDF({ days, inclusions, exclusions, pricing, trip, client })
+     
+    
 
 
-        }
-        className="px-6 py-2 rounded-lg bg-orange-500 text-white hover:bg-orange-600"
-      >
-        📄 Download PDF
-      </button>
-    </div>
+
   );
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col">
+        
       <AppHeader />
 
       <div className="flex flex-1 overflow-hidden">
@@ -405,47 +465,67 @@ async function saveItinerary(data) {
     Day {i + 1}
   </div>
 
-  {days.length > 1 && (
-    <button
-      onClick={(e) => {
-        e.stopPropagation();
-        deleteDay(i);
-      }}
-      className="text-gray-400 hover:text-red-600 text-sm"
-      title="Delete day"
-    >
-      ✕
-    </button>
-  )}
+ {!isFinal && days.length > 1 && (
+  <button
+    onClick={(e) => {
+      e.stopPropagation();
+      deleteDay(i);
+    }}
+    className="text-gray-400 hover:text-red-600 text-sm"
+    title="Delete day"
+  >
+    ✕
+  </button>
+)}
+
 </li>
 
             ))}
           </ul>
 
           <button
-            onClick={addDay}
-            className="mt-8 text-sm font-medium text-blue-700 hover:underline"
-          >
-            + Add Day
-          </button>
+  disabled={isFinal}
+  onClick={() => {
+    if (isFinal) return;
+    addDay();
+  }}
+  className={`mt-8 text-sm font-medium ${
+    isFinal
+      ? "text-gray-400 cursor-not-allowed"
+      : "text-blue-700 hover:underline"
+  }`}
+>
+  + Add Day
+</button>
+
         </aside>
 
         {/* CANVAS */}
-        <main className="flex-1 overflow-y-auto py-10 px-6">
-          <div className="max-w-3xl mx-auto bg-white rounded-2xl shadow-md px-10 py-10">
+<main className="flex-1 overflow-y-auto py-10 px-6">
+<div className="relative max-w-3xl mx-auto bg-white rounded-2xl shadow-md px-10 py-10">
+    {isFinal && (
+  <div className="absolute inset-0 z-50 bg-transparent cursor-not-allowed" />
+)}
             {/* TRIP DETAILS */}
             <div className="mb-4">
   <label className="text-sm font-medium text-black">
     Client Name
   </label>
   <input
-    value={client.name}
-    onChange={(e) =>
-      setClient({ name: e.target.value })
-    }
-    placeholder="e.g. Rahul Sharma"
-    className="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-black"
-  />
+  value={client.name}
+  disabled={isFinal}
+  onChange={(e) => {
+    if (isFinal) return;
+    setClient({ name: e.target.value });
+  }}
+  placeholder="e.g. Rahul Sharma"
+  className={`w-full mt-1 border rounded-lg px-3 py-2 text-black ${
+    isFinal
+      ? "bg-gray-100 cursor-not-allowed border-gray-200"
+      : "border-gray-300"
+  }`}
+/>
+
 </div>
 
 <div className="mt-14 mb-10">
@@ -459,12 +539,19 @@ async function saveItinerary(data) {
         Destination
       </label>
       <input
-        value={trip.destination}
-        onChange={(e) =>
-          setTrip({ ...trip, destination: e.target.value })
-        }
+      value={trip.destination}
+        disabled={isFinal}
+
+        onChange={(e) => {
+          if (isFinal) return;
+          setTrip({ ...trip, destination: e.target.value });
+        }}
         placeholder="e.g. Manali, Himachal Pradesh"
-        className="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-black"
+        className={`w-full mt-1 border rounded-lg px-3 py-2 text-black ${
+    isFinal
+      ? "bg-gray-100 cursor-not-allowed border-gray-200"
+      : "border-gray-300"
+  }`}
       />
     </div>
 
@@ -473,13 +560,20 @@ async function saveItinerary(data) {
         Guests
       </label>
       <input
-        value={trip.guests}
-        onChange={(e) =>
-          setTrip({ ...trip, guests: e.target.value })
-        }
-        placeholder="e.g. 2 Adults, 1 Child"
-        className="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-black"
-      />
+  value={trip.guests}
+  disabled={isFinal}
+  onChange={(e) => {
+    if (isFinal) return;
+    setTrip({ ...trip, guests: e.target.value });
+  }}
+  placeholder="e.g. 2 Adults, 1 Child"
+  className={`w-full mt-1 border rounded-lg px-3 py-2 text-black ${
+    isFinal
+      ? "bg-gray-100 cursor-not-allowed border-gray-200"
+      : "border-gray-300"
+  }`}
+/>
+
     </div>
 
     <div>
@@ -487,13 +581,20 @@ async function saveItinerary(data) {
         Start Date
       </label>
       <input
-        type="date"
-        value={trip.startDate}
-        onChange={(e) =>
-          setTrip({ ...trip, startDate: e.target.value })
-        }
-        className="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-black"
-      />
+  type="date"
+  value={trip.startDate}
+  disabled={isFinal}
+  onChange={(e) => {
+    if (isFinal) return;
+    setTrip({ ...trip, startDate: e.target.value });
+  }}
+  className={`w-full mt-1 border rounded-lg px-3 py-2 text-black ${
+    isFinal
+      ? "bg-gray-100 cursor-not-allowed border-gray-200"
+      : "border-gray-300"
+  }`}
+/>
+
     </div>
 
     <div>
@@ -501,13 +602,20 @@ async function saveItinerary(data) {
         End Date
       </label>
       <input
-        type="date"
-        value={trip.endDate}
-        onChange={(e) =>
-          setTrip({ ...trip, endDate: e.target.value })
-        }
-        className="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 text-black"
-      />
+  type="date"
+  value={trip.endDate}
+  disabled={isFinal}
+  onChange={(e) => {
+    if (isFinal) return;
+    setTrip({ ...trip, endDate: e.target.value });
+  }}
+  className={`w-full mt-1 border rounded-lg px-3 py-2 text-black ${
+    isFinal
+      ? "bg-gray-100 cursor-not-allowed border-gray-200"
+      : "border-gray-300"
+  }`}
+/>
+
     </div>
   </div>
 </div>
@@ -524,29 +632,39 @@ async function saveItinerary(data) {
   <span>Day {activeDay + 1} –</span>
 
   <input
-    value={day.title || ""}
-    onChange={(e) => updateDayTitle(e.target.value)}
-    placeholder="Enter day title"
-    className="outline-none border-none bg-transparent font-semibold text-black flex-1"
-  />
+  value={day.title || ""}
+  disabled={isFinal}
+  onChange={(e) => {
+    if (isFinal) return;
+    updateDayTitle(e.target.value);
+  }}
+  placeholder="Enter day title"
+  className={`outline-none border-none bg-transparent font-semibold text-black flex-1 ${
+    isFinal ? "cursor-not-allowed opacity-70" : ""
+  }`}
+/>
+
 </h2>
 
 
 
-   {isEditingDescription ? (
+   
   <textarea
-    value={descriptionDraft}
-    onChange={(e) => setDescriptionDraft(e.target.value)}
-    onBlur={() => {
-      updateDayDescriptions(descriptionDraft);
-      setIsEditingDescription(false);
-    }}
-    placeholder="Add day description points (one per line)"
-    rows={4}
-    autoFocus
-    className="w-full mt-2 text-black outline-none border-none bg-transparent resize-none leading-relaxed whitespace-pre-wrap"
-  />
-) : (
+  value={day.description || ""}
+  onChange={(e) => {
+    setDays((prev) =>
+      prev.map((d, i) =>
+        i === activeDay ? { ...d, description: e.target.value } : d
+      )
+    );
+  }}
+  placeholder="Write day description (paragraphs, bullets, anything)"
+  rows={6}
+  className="w-full mt-2 border border-gray-300 rounded-lg px-3 py-2 text-black resize-none leading-relaxed"
+/>
+
+
+ : (
   <textarea
   value={day.description || ""}
   onChange={(e) =>
@@ -563,7 +681,7 @@ async function saveItinerary(data) {
   className="w-full mt-2 text-black border border-gray-300 rounded-lg px-3 py-2 resize-none leading-relaxed"
 />
 
-)}
+)
 
 
 
@@ -827,6 +945,16 @@ async function saveItinerary(data) {
 
 
           </div>
+          <div className="max-w-3xl mx-auto mt-4 flex justify-end">
+  <button
+    onClick={() =>
+      downloadPDF({ days, inclusions, exclusions, pricing, trip, client })
+    }
+    className="px-6 py-2 rounded-lg bg-orange-500 text-white hover:bg-orange-600"
+  >
+    📄 Download PDF
+  </button>
+</div>
         </main>
       </div>
     </div>

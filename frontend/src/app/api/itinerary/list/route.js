@@ -1,18 +1,75 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { createClient } from "@supabase/supabase-js";
+
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+);
 
 export async function GET(req) {
   try {
     const { searchParams } = new URL(req.url);
     const q = searchParams.get("q") || "";
+    const token = searchParams.get("token");
 
-    const itineraries = await prisma.itinerary.findMany({
-      where: {
-        destination: {
-          contains: q,
-          mode: "insensitive",
-        },
-      },
+    if (!token) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // verify user
+    const {
+      data: { user },
+      error,
+    } = await supabaseAdmin.auth.getUser(token);
+
+    if (error || !user) {
+      return NextResponse.json({ error: "Invalid token" }, { status: 401 });
+    }
+
+    // get role
+    const dbUser = await prisma.user.findUnique({
+      where: { id: user.id },
+    });
+
+    if (!dbUser) {
+      return NextResponse.json({ error: "User not found" }, { status: 401 });
+    }
+
+    const isAdmin = dbUser.role === "ADMIN";
+
+    // build where condition
+    const baseSearch = q
+      ? {
+          destination: {
+            contains: q,
+            mode: "insensitive",
+          },
+        }
+      : {};
+
+    let where;
+
+    if (isAdmin) {
+      // admin sees everything
+      where = baseSearch;
+    } else {
+      // staff: own OR final of others
+      where = {
+        AND: [
+          baseSearch,
+          {
+            OR: [
+              { createdBy: user.id },
+              { status: "FINAL" },
+            ],
+          },
+        ],
+      };
+    }
+
+    const items = await prisma.itinerary.findMany({
+      where,
       orderBy: {
         createdAt: "desc",
       },
@@ -21,10 +78,12 @@ export async function GET(req) {
         destination: true,
         clientName: true,
         createdAt: true,
+        status: true,
+        createdBy: true,
       },
     });
 
-    return NextResponse.json(itineraries);
+    return NextResponse.json(items);
   } catch (error) {
     console.error("LIST ITINERARY ERROR:", error);
     return NextResponse.json([], { status: 500 });
