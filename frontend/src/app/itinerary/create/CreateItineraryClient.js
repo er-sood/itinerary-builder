@@ -8,7 +8,7 @@ import AppHeader from "@/components/AppHeader";
 
 import { useRouter } from "next/navigation";
 import AuthGuard from "@/components/AuthGuard";
-import AppHeader from "@/components/AppHeader";
+
 
 export default function CreateItineraryPage() {
 
