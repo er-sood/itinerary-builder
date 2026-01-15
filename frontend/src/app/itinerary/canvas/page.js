@@ -1,7 +1,9 @@
-
 "use client";
+
 export const dynamic = "force-dynamic";
-import { useSearchParams, useRouter } from "next/navigation";
+
+
+import { useRouter } from "next/navigation";
 
 import { useState, useRef, useEffect } from "react";
 
@@ -25,10 +27,14 @@ export default function ItineraryCanvasPage() {
 
   
 
-const searchParams = useSearchParams();
-const itineraryId = searchParams.get("id");
+const [itineraryId, setItineraryId] = useState(null);
 
 const [status, setStatus] = useState("DRAFT");
+useEffect(() => {
+  const params = new URLSearchParams(window.location.search);
+  setItineraryId(params.get("id"));
+}, []);
+
 
   const [client, setClient] = useState({
   name: "",

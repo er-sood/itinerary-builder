@@ -7,9 +7,8 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-
 model Itinerary {
-  id          String   @id @default(uuid())
+  id          String    @id @default(uuid())
   clientName  String?
   destination String
   trip        Json
@@ -17,24 +16,18 @@ model Itinerary {
   inclusions  Json
   exclusions  Json
   pricing     Json
-
-  status      String   @default("DRAFT") // DRAFT | FINAL
+  status      String    @default("DRAFT")
   finalizedAt DateTime?
-
   createdBy   String
-  user        User     @relation("UserItineraries", fields: [createdBy], references: [id])
-
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  user        User      @relation("UserItineraries", fields: [createdBy], references: [id])
 }
 
-
-
 model User {
-  id        String   @id          // Supabase auth user id
-  email     String   @unique
-  role      String               // ADMIN | STAFF
-  createdAt DateTime @default(now())
-
+  id          String      @id
+  email       String      @unique
+  role        String
+  createdAt   DateTime    @default(now())
   itineraries Itinerary[] @relation("UserItineraries")
 }
