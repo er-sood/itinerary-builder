@@ -60,8 +60,8 @@ const isFinal = status === "FINAL";
 });
 
 const router = useRouter();
-
 const [saving, setSaving] = useState(false);
+
 
 
   const [inclusions, setInclusions] = useState([
@@ -333,8 +333,6 @@ async function handleFinalize() {
 
 
 async function saveItinerary(data) {
-     if (saving) return;
-  setSaving(true);
   try {
     // 1. get logged-in user session
     const {
@@ -417,12 +415,13 @@ async function saveItinerary(data) {
 
     <div className="mt-12 flex justify-end gap-4">
       
-  <button
-  type="button"
-  disabled={status === "FINAL" || saving}
-  onClick={(e) => {
-    e.preventDefault();
-    saveItinerary({
+<button
+  disabled={saving || status === "FINAL"}
+  onClick={async () => {
+    if (saving) return;
+    setSaving(true);
+
+    await saveItinerary({
       itineraryId,
       days,
       inclusions,
@@ -431,8 +430,15 @@ async function saveItinerary(data) {
       trip,
       client,
     });
+
+    setSaving(false);
   }}
 >
+className={`px-6 py-2 rounded-lg text-white ${
+    status === "FINAL"
+      ? "bg-gray-400 cursor-not-allowed"
+      : "bg-gray-800 hover:bg-gray-900"
+  }`}
 
   💾 Save Itinerary
 </button>
@@ -441,7 +447,6 @@ async function saveItinerary(data) {
 
      
     
-
 
 
   );
