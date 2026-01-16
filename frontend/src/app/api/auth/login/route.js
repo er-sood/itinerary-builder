@@ -4,10 +4,7 @@ export async function POST(req) {
   const { username, password } = await req.json();
 
   // Example users (replace later with DB)
-  const users = {
-    admin: { password: "admin123", role: "ADMIN" },
-    staff: { password: "staff123", role: "STAFF" }
-  };
+  
 
   const user = users[username];
 
@@ -18,13 +15,16 @@ export async function POST(req) {
   const res = NextResponse.json({ success: true });
 
   res.cookies.set(
-    "user",
-    JSON.stringify({ username, role: user.role }),
-    {
-      httpOnly: true,
-      path: "/",
-    }
-  );
+  "user",
+  JSON.stringify({ username, role: user.role }),
+  {
+    httpOnly: true,
+    path: "/",
+    sameSite: "lax",
+    secure: true, // REQUIRED on Vercel (https)
+  }
+);
+
 
   return res;
 }

@@ -661,9 +661,11 @@ async function saveItinerary(data) {
 
 
    
-  <textarea
+<textarea
   value={day.description || ""}
+  disabled={isFinal}
   onChange={(e) => {
+    if (isFinal) return;
     setDays((prev) =>
       prev.map((d, i) =>
         i === activeDay ? { ...d, description: e.target.value } : d
@@ -672,28 +674,11 @@ async function saveItinerary(data) {
   }}
   placeholder="Write day description (paragraphs, bullets, anything)"
   rows={6}
-  className="w-full mt-2 border border-gray-300 rounded-lg px-3 py-2 text-black resize-none leading-relaxed"
+  className={`w-full mt-2 border border-gray-300 rounded-lg px-3 py-2 text-black resize-none leading-relaxed ${
+    isFinal ? "bg-gray-100 cursor-not-allowed" : ""
+  }`}
 />
 
-
- : (
-  <textarea
-  value={day.description || ""}
-  onChange={(e) =>
-    setDays((prev) =>
-      prev.map((d, i) =>
-        i === activeDay
-          ? { ...d, description: e.target.value }
-          : d
-      )
-    )
-  }
-  placeholder="Write day description (paragraphs, bullets, anything)"
-  rows={6}
-  className="w-full mt-2 text-black border border-gray-300 rounded-lg px-3 py-2 resize-none leading-relaxed"
-/>
-
-)
 
 
 

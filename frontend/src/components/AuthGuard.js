@@ -27,11 +27,9 @@ export default function AuthGuard({ children }) {
     }
 
     check();
-  }, []);
+  }, [router]);
 
-  if (checking) {
-    return null;
-  }
+  if (checking) return null;
 
   return children;
 }
