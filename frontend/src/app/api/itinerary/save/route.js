@@ -2,27 +2,37 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { createClient } from "@supabase/supabase-js";
 
-const supabaseAdmin = createClient(
+const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 );
 
 export async function POST(req) {
   try {
     const body = await req.json();
-    const { days, inclusions, exclusions, pricing, trip, client, accessToken, itineraryId } = body;
+    const {
+      days,
+      inclusions,
+      exclusions,
+      pricing,
+      trip,
+      client,
+      accessToken,
+      itineraryId,
+    } = body;
 
     if (!accessToken) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // verify user
+    // ✅ VERIFY USER USING ACCESS TOKEN
     const {
       data: { user },
       error,
-    } = await supabaseAdmin.auth.getUser(accessToken);
+    } = await supabase.auth.getUser(accessToken);
 
     if (error || !user) {
+      console.error("Auth error:", error);
       return NextResponse.json({ error: "Invalid token" }, { status: 401 });
     }
 
@@ -36,7 +46,6 @@ export async function POST(req) {
     let itinerary;
 
     if (itineraryId) {
-      // UPDATE — only owner or admin later (we'll add admin check next)
       const existing = await prisma.itinerary.findUnique({
         where: { id: itineraryId },
       });
@@ -58,7 +67,6 @@ export async function POST(req) {
         },
       });
     } else {
-      // CREATE
       itinerary = await prisma.itinerary.create({
         data: {
           destination: trip.destination,
