@@ -333,9 +333,9 @@ async function handleFinalize() {
 
 
 async function saveItinerary(data) {
-    if (Saving) return; // 🚫 prevent double click / double call
+    if (saving) return; // 🚫 prevent double click / double call
 
-  setIsSaving(true);
+  setSaving(true);
   try {
     // 1. get logged-in user session
     const {
@@ -372,7 +372,7 @@ async function saveItinerary(data) {
     alert("Error while saving itinerary");
   }
   finally {
-    setIsSaving(false);
+    setSaving(false);
   }
 
 }
@@ -445,7 +445,7 @@ className={`px-6 py-2 rounded-lg text-white ${
 
 
   💾 Save Itinerary
-  {Saving ? "Saving..." : "💾 Save Itinerary"}
+  {saving ? "saving..." : "💾 Save Itinerary"}
 </button>
 </div>
 
