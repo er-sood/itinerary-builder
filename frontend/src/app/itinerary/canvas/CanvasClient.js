@@ -333,6 +333,9 @@ async function handleFinalize() {
 
 
 async function saveItinerary(data) {
+    if (isSaving) return; // 🚫 prevent double click / double call
+
+  setIsSaving(true);
   try {
     // 1. get logged-in user session
     const {
@@ -368,6 +371,10 @@ async function saveItinerary(data) {
     console.error(err);
     alert("Error while saving itinerary");
   }
+  finally {
+    setIsSaving(false);
+  }
+
 }
 
 
@@ -417,12 +424,9 @@ async function saveItinerary(data) {
       
 <button
   type="button"
-  disabled={saving || status === "FINAL"}
-  onClick={async () => {
-    if (saving) return;
-    setSaving(true);
-
-    await saveItinerary({
+  disabled={issaving || status === "FINAL"}
+  onClick={() =>
+    saveItinerary({
       itineraryId,
       days,
       inclusions,
@@ -430,10 +434,8 @@ async function saveItinerary(data) {
       pricing,
       trip,
       client,
-    });
-
-    setSaving(false);
-  }}
+    })
+  }
 className={`px-6 py-2 rounded-lg text-white ${
     status === "FINAL"
       ? "bg-gray-400 cursor-not-allowed"
@@ -443,6 +445,7 @@ className={`px-6 py-2 rounded-lg text-white ${
 
 
   💾 Save Itinerary
+  {isSaving ? "Saving..." : "💾 Save Itinerary"}
 </button>
 </div>
 
