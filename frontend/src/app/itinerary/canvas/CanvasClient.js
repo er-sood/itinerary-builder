@@ -416,6 +416,7 @@ async function saveItinerary(data) {
     <div className="mt-12 flex justify-end gap-4">
       
 <button
+  type="button"
   disabled={saving || status === "FINAL"}
   onClick={async () => {
     if (saving) return;
@@ -433,12 +434,13 @@ async function saveItinerary(data) {
 
     setSaving(false);
   }}
->
 className={`px-6 py-2 rounded-lg text-white ${
     status === "FINAL"
       ? "bg-gray-400 cursor-not-allowed"
       : "bg-gray-800 hover:bg-gray-900"
   }`}
+>
+
 
   💾 Save Itinerary
 </button>
@@ -447,6 +449,7 @@ className={`px-6 py-2 rounded-lg text-white ${
 
      
     
+
 
 
   );
