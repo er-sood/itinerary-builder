@@ -333,7 +333,7 @@ async function handleFinalize() {
 
 
 async function saveItinerary(data) {
-    if (isSaving) return; // 🚫 prevent double click / double call
+    if (Saving) return; // 🚫 prevent double click / double call
 
   setIsSaving(true);
   try {
@@ -445,7 +445,7 @@ className={`px-6 py-2 rounded-lg text-white ${
 
 
   💾 Save Itinerary
-  {isSaving ? "Saving..." : "💾 Save Itinerary"}
+  {Saving ? "Saving..." : "💾 Save Itinerary"}
 </button>
 </div>
 
