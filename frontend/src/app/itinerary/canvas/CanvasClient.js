@@ -59,6 +59,9 @@ const isFinal = status === "FINAL";
   guests: "",
 });
 
+const savingRef = useRef(false);
+
+
 const router = useRouter();
 const [saving, setSaving] = useState(false);
 
@@ -331,13 +334,12 @@ async function handleFinalize() {
 }
 
 
-
 async function saveItinerary(data) {
-    if (saving) return; // 🚫 prevent double click / double call
-
+  if (savingRef.current) return; // 🔒 HARD LOCK
+  savingRef.current = true;
   setSaving(true);
+
   try {
-    // 1. get logged-in user session
     const {
       data: { session },
     } = await supabase.auth.getSession();
@@ -347,14 +349,13 @@ async function saveItinerary(data) {
       return;
     }
 
-    // 2. send token to backend
     const res = await fetch("/api/itinerary/save", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         ...data,
-        itineraryId, // for update
-        accessToken: session.access_token, // 🔐 IMPORTANT
+        itineraryId,
+        accessToken: session.access_token,
       }),
     });
 
@@ -363,22 +364,17 @@ async function saveItinerary(data) {
     if (result.success) {
       alert("Itinerary saved successfully");
       router.replace(`/itinerary/canvas?id=${result.itineraryId}`);
-
     } else {
       alert(result.error || "Failed to save itinerary");
     }
   } catch (err) {
     console.error(err);
     alert("Error while saving itinerary");
-  }
-  finally {
+  } finally {
     setSaving(false);
+    savingRef.current = false; // 🔓 RELEASE LOCK
   }
-
 }
-
-
-
 
 
 
@@ -444,7 +440,7 @@ className={`px-6 py-2 rounded-lg text-white ${
 >
 
 
-  💾 Save Itinerary
+
   {saving ? "saving..." : "💾 Save Itinerary"}
 </button>
 </div>
