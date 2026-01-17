@@ -2,9 +2,9 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { createClient } from "@supabase/supabase-js";
 
-const supabaseAdmin = createClient(
+const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 );
 
 export async function POST(req) {
@@ -15,11 +15,11 @@ export async function POST(req) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // verify user
+    // ✅ VERIFY USER USING SAME CLIENT
     const {
       data: { user },
       error,
-    } = await supabaseAdmin.auth.getUser(accessToken);
+    } = await supabase.auth.getUser(accessToken);
 
     if (error || !user) {
       return NextResponse.json({ error: "Invalid token" }, { status: 401 });
