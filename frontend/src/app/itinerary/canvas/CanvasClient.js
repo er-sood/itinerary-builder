@@ -40,11 +40,14 @@ useEffect(() => {
   const params = new URLSearchParams(window.location.search);
   setItineraryId(params.get("id"));
 }, []);*/
+const [status, setStatus] = useState("DRAFT");
+
+console.log("🟡 CURRENT STATUS STATE:", status);
 
 const searchParams = useSearchParams();
 const itineraryId = searchParams.get("id");
 
-const [status, setStatus] = useState("DRAFT");
+
 
   const [client, setClient] = useState({
   name: "",
@@ -293,6 +296,8 @@ async function loadItinerary() {
   setExclusions(data.exclusions || []);
   setPricing(data.pricing || {});
   setStatus(data.status || "DRAFT");
+  console.log("🟢 STATUS FROM API:", data.status);
+
 }
 
 
