@@ -44,7 +44,7 @@ useEffect(() => {
 const searchParams = useSearchParams();
 const itineraryId = searchParams.get("id");
 
-
+const [status, setStatus] = useState("DRAFT");
 
   const [client, setClient] = useState({
   name: "",
