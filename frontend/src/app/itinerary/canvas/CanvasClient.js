@@ -335,19 +335,22 @@ async function handleFinalize() {
 
 
 async function saveItinerary(data) {
-  if (savingRef.current) return; // 🔒 HARD LOCK
+  console.log("🔥 SAVE CALLED");
+
+  if (savingRef.current) {
+    console.log("⛔ BLOCKED BY REF");
+    return;
+  }
+
   savingRef.current = true;
   setSaving(true);
 
   try {
+    console.log("➡️ BEFORE FETCH");
+
     const {
       data: { session },
     } = await supabase.auth.getSession();
-
-    if (!session) {
-      alert("You are not logged in");
-      return;
-    }
 
     const res = await fetch("/api/itinerary/save", {
       method: "POST",
@@ -359,7 +362,11 @@ async function saveItinerary(data) {
       }),
     });
 
+    console.log("⬅️ AFTER FETCH");
+
     const result = await res.json();
+
+    console.log("📦 RESULT:", result);
 
     if (result.success) {
       alert("Itinerary saved successfully");
@@ -368,13 +375,15 @@ async function saveItinerary(data) {
       alert(result.error || "Failed to save itinerary");
     }
   } catch (err) {
-    console.error(err);
+    console.error("❌ SAVE ERROR:", err);
     alert("Error while saving itinerary");
   } finally {
+    console.log("🔓 FINALLY");
     setSaving(false);
-    savingRef.current = false; // 🔓 RELEASE LOCK
+    savingRef.current = false;
   }
 }
+
 
 
 
@@ -422,6 +431,8 @@ async function saveItinerary(data) {
   type="button"
   disabled={saving || status === "FINAL"}
   onClick={() =>
+    console.log("🖱 BUTTON CLICK");
+  
     saveItinerary({
       itineraryId,
       days,
@@ -430,7 +441,7 @@ async function saveItinerary(data) {
       pricing,
       trip,
       client,
-    })
+    });
   }
 className={`px-6 py-2 rounded-lg text-white ${
     status === "FINAL"
