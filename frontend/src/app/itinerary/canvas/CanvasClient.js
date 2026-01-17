@@ -430,9 +430,9 @@ async function saveItinerary(data) {
 <button
   type="button"
   disabled={saving || status === "FINAL"}
-  onClick={() => { 
+  onClick={() => {
     console.log("🖱 BUTTON CLICK");
-  }
+
     saveItinerary({
       itineraryId,
       days,
@@ -442,18 +442,16 @@ async function saveItinerary(data) {
       trip,
       client,
     });
-  }
-className={`px-6 py-2 rounded-lg text-white ${
+  }}
+  className={`px-6 py-2 rounded-lg text-white ${
     status === "FINAL"
       ? "bg-gray-400 cursor-not-allowed"
       : "bg-gray-800 hover:bg-gray-900"
   }`}
 >
-
-
-
   {saving ? "saving..." : "💾 Save Itinerary"}
 </button>
+
 </div>
 
 
