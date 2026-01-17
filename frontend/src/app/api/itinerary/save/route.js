@@ -8,6 +8,7 @@ const supabase = createClient(
 );
 
 export async function POST(req) {
+    console.log("📥 API /save HIT");
   try {
     const body = await req.json();
     const {
