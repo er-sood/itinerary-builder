@@ -4,15 +4,14 @@ import { createClient } from "@supabase/supabase-js";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY   // ✅ USE ANON KEY
 );
 
 export async function GET(req) {
-
-
   try {
-      const { pathname } = new URL(req.url);
-  const id = pathname.split("/").pop();
+    const { pathname } = new URL(req.url);
+    const id = pathname.split("/").pop();
+
     const authHeader = req.headers.get("authorization");
 
     if (!authHeader) {
@@ -31,8 +30,7 @@ export async function GET(req) {
     }
 
     const itinerary = await prisma.itinerary.findUnique({
-     where: { id },
-
+      where: { id },
     });
 
     if (!itinerary) {
@@ -47,7 +45,6 @@ export async function GET(req) {
     const isFinal = itinerary.status === "FINAL";
     const isAdmin = dbUser?.role === "ADMIN";
 
-    // 🔐 Access Rules
     if (!isAdmin && !isFinal && !isOwner) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
