@@ -25,8 +25,14 @@ export default function BrowseItinerariesPage() {
       }
 
       const res = await fetch(
-        `/api/itinerary/list?q=${encodeURIComponent(query)}&token=${session.access_token}`
-      );
+  `/api/itinerary/list?q=${encodeURIComponent(query)}`,
+  {
+    headers: {
+      Authorization: `Bearer ${session.access_token}`,
+    },
+  }
+);
+
 
       if (!res.ok) throw new Error("Request failed");
 

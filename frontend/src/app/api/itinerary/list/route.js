@@ -11,11 +11,14 @@ export async function GET(req) {
   try {
     const { searchParams } = new URL(req.url);
     const q = searchParams.get("q") || "";
-    const token = searchParams.get("token");
+    const authHeader = req.headers.get("authorization");
 
-    if (!token) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+if (!authHeader) {
+  return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+}
+
+const token = authHeader.replace("Bearer ", "");
+
 
     // verify user
     const {
