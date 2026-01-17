@@ -430,9 +430,9 @@ async function saveItinerary(data) {
 <button
   type="button"
   disabled={saving || status === "FINAL"}
-  onClick={() =>
+  onClick={() => { 
     console.log("🖱 BUTTON CLICK");
-  
+  }
     saveItinerary({
       itineraryId,
       days,
