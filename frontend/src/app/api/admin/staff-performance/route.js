@@ -8,11 +8,9 @@ const supabaseAdmin = createClient(
   {
     auth: {
       persistSession: false,
-      autoRefreshToken: false,
     },
   }
 );
-
 
 export async function GET(req) {
   try {
