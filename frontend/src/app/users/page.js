@@ -20,47 +20,53 @@ export default function ManageUsersPage() {
   const [error, setError] = useState("");
 
   // 🔐 ADMIN ACCESS CHECK
-  useEffect(() => {
-    async function checkAccess() {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
+ useEffect(() => {
+  async function checkAccess() {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
 
-      if (!session) {
-        router.replace("/login");
-        return;
-      }
-
-      const res = await fetch("/api/auth/me", {
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-        },
-      });
-
-      if (!res.ok) {
-        router.replace("/login");
-        return;
-      }
-
-      const data = await res.json();
-
-      if (data.role !== "ADMIN") {
-        router.replace("/dashboard");
-        return;
-      }
-
-      setLoading(false);
-      loadUsers(session.access_token);
+    if (!session) {
+      router.replace("/login");
+      return;
     }
 
-    checkAccess();
-  }, []);
+    const res = await fetch("/api/admin/users", {
+      headers: {
+        Authorization: `Bearer ${session.access_token}`,
+      },
+    });
 
-  async function loadUsers(token) {
-    const res = await fetch(`/api/admin/users?token=${token}`);
+    if (res.status === 403) {
+      router.replace("/dashboard"); // not admin
+      return;
+    }
+
+    if (!res.ok) {
+      router.replace("/login");
+      return;
+    }
+
     const data = await res.json();
     setUsers(data);
+    setLoading(false);
   }
+
+  checkAccess();
+}, []);
+
+
+  async function loadUsers(token) {
+  const res = await fetch("/api/admin/users", {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  const data = await res.json();
+  setUsers(data);
+}
+
 
   async function createUser(e) {
     e.preventDefault();
