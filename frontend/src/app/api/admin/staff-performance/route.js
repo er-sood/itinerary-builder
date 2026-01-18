@@ -9,6 +9,9 @@ const supabaseAdmin = createClient(
 
 export async function GET(req) {
   try {
+    console.log("SUPABASE URL:", process.env.NEXT_PUBLIC_SUPABASE_URL);
+    console.log("SERVICE KEY EXISTS:", !!process.env.SUPABASE_SERVICE_ROLE_KEY);
+
     const authHeader = req.headers.get("authorization");
 
     if (!authHeader) {
@@ -16,7 +19,7 @@ export async function GET(req) {
     }
 
     const token = authHeader.replace("Bearer ", "");
-
+    console.log("TOKEN START:", token.slice(0, 20));
     // ✅ verify user
     const {
       data: { user },
