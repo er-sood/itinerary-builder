@@ -16,7 +16,10 @@ export async function GET(req) {
   try {
     console.log("SUPABASE URL:", process.env.NEXT_PUBLIC_SUPABASE_URL);
     console.log("SERVICE KEY EXISTS:", !!process.env.SUPABASE_SERVICE_ROLE_KEY);
-
+    console.log(
+  "SERVICE KEY START:",
+  process.env.SUPABASE_SERVICE_ROLE_KEY?.slice(0, 15)
+);
     const authHeader = req.headers.get("authorization");
 
     if (!authHeader) {
