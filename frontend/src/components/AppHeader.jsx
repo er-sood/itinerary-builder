@@ -1,7 +1,23 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabaseClient";
 
 export default function AppHeader() {
+  const router = useRouter();
+
+  async function handleLogout() {
+    const confirm = window.confirm("Are you sure you want to logout?");
+
+    if (!confirm) return;
+
+    await supabase.auth.signOut();
+
+    router.replace("/login");
+  }
+
   return (
     <header className="h-20 px-8 flex items-center justify-between bg-transparent">
       
@@ -22,11 +38,12 @@ export default function AppHeader() {
           My Profile
         </button>
 
-        <form action="/api/auth/logout" method="POST">
-          <button className="bg-blue-600 text-white px-5 py-2 rounded-full hover:bg-blue-700 transition text-sm font-medium">
-            Logout
-          </button>
-        </form>
+        <button
+          onClick={handleLogout}
+          className="bg-blue-600 text-white px-5 py-2 rounded-full hover:bg-blue-700 transition text-sm font-medium"
+        >
+          Logout
+        </button>
       </div>
     </header>
   );
