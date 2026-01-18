@@ -3,12 +3,8 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import AppHeader from "@/components/AppHeader";
-import { createClient } from "@supabase/supabase-js";
+import { supabase } from "@/lib/supabaseClient";
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-);
 
 export default function ManageUsersPage() {
   const router = useRouter();
@@ -25,7 +21,7 @@ export default function ManageUsersPage() {
     const {
       data: { session },
     } = await supabase.auth.getSession();
-
+    console.log("MANAGE USERS SESSION:", session);
     if (!session) {
       router.replace("/login");
       return;
