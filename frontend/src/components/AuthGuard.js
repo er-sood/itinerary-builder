@@ -13,21 +13,32 @@ export default function AuthGuard({ children }) {
   const router = useRouter();
   const [checking, setChecking] = useState(true);
 
-  useEffect(() => {
-    async function check() {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
+useEffect(() => {
+  let mounted = true;
 
-      if (!session) {
-        router.replace("/login");
-      } else {
-        setChecking(false);
-      }
+  async function check() {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    if (!mounted) return;
+
+    if (!session) {
+      router.replace("/login");
+    } else {
+      setChecking(false);
     }
+  }
 
-    check();
-  }, [router]);
+  // small delay helps on mobile browsers
+  const t = setTimeout(check, 200);
+
+  return () => {
+    mounted = false;
+    clearTimeout(t);
+  };
+}, [router]);
+
 
   if (checking) return null;
 

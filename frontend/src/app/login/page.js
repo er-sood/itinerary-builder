@@ -21,20 +21,25 @@ const { data, error } = await supabase.auth.signInWithPassword({
   email: username,
   password,
 });
+console.log("LOGIN RESULT:", data, error);
 
 if (error) {
   setError(error.message || "Invalid login");
 } else {
-  // Sync user with DB
   const session = data.session;
 
+  // sync user
   await fetch("/api/auth/sync-user", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ accessToken: session.access_token }),
   });
 
-  router.replace("/dashboard");
+  // ✅ IMPORTANT: wait one tick so cookie is available
+  await new Promise((r) => setTimeout(r, 300));
+
+  // ✅ FULL reload so AuthGuard sees session
+  window.location.href = "/dashboard";
 }
 
   }
