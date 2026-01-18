@@ -9,8 +9,14 @@ const supabaseAdmin = createClient(
 
 export async function GET(req) {
   try {
-    const { searchParams } = new URL(req.url);
-    const token = searchParams.get("token");
+    const authHeader = req.headers.get("authorization");
+
+if (!authHeader) {
+  return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+}
+
+const token = authHeader.replace("Bearer ", "");
+
 
     if (!token) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
