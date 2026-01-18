@@ -2,10 +2,11 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { createClient } from "@supabase/supabase-js";
 
-const supabaseAdmin = createClient(
+const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 );
+
 
 export async function GET(req) {
   try {
@@ -24,7 +25,8 @@ const token = authHeader.replace("Bearer ", "");
     const {
       data: { user },
       error,
-    } = await supabaseAdmin.auth.getUser(token);
+   } = await supabase.auth.getUser(token);
+
 
     if (error || !user) {
       return NextResponse.json({ error: "Invalid token" }, { status: 401 });
