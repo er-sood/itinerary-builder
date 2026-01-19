@@ -1183,7 +1183,7 @@ async function saveItinerary(data) {
   value={marginPercent === 0 ? "" : marginPercent}
   onChange={(e) => {
     if (isFinal) return;
-    setMarginPercent(e.target.value === "" ? 0 : Number(e.target.value));
+    setMarginPercent(e.target.value);
   }}
   className={`w-24 border rounded px-2 py-1 text-black text-right ${
     isFinal ? "bg-gray-100 cursor-not-allowed" : ""
