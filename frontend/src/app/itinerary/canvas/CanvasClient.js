@@ -19,6 +19,7 @@ import { useSearchParams } from "next/navigation";
 
 
 
+
 const ACTIVITY_TYPES = [
   { key: "flight", label: "Flight", icon: "✈️" },
   { key: "hotel", label: "Hotel", icon: "🏨" },
@@ -40,6 +41,16 @@ useEffect(() => {
   const params = new URLSearchParams(window.location.search);
   setItineraryId(params.get("id"));
 }, []);*/
+
+const [viewMode, setViewMode] = useState("ITINERARY"); 
+// or "INTERNAL"
+const [referenceBy, setReferenceBy] = useState("");
+const [marginPercent, setMarginPercent] = useState(0);
+
+
+
+
+
 const [status, setStatus] = useState("DRAFT");
 
 console.log("🟡 CURRENT STATUS STATE:", status);
@@ -51,6 +62,7 @@ const itineraryId = searchParams.get("id");
 
   const [client, setClient] = useState({
   name: "",
+  phone: "",
 });
 const isFinal = status === "FINAL";
 
@@ -88,14 +100,30 @@ const [saving, setSaving] = useState(false);
   /* ---------------- DAY LEVEL ---------------- */
 
   const [days, setDays] = useState([
-    {
-      title: "Arrival & Welcome",
-      description: ""
-,
-      activities: [],
-      highlights: [],
+  {
+    title: "Arrival & Welcome",
+    description: "",
+    activities: [],
+    highlights: [],
+    cost: {
+      hotel: 0,
+      transport: 0,
+      sightseeing: 0,
+      flight: 0,
+      misc: 0,
     },
-  ]);
+  },
+]);
+
+const totalActualCost = days.reduce(
+  (sum, d) =>
+    sum + Object.values(d.cost || {}).reduce((a, b) => a + b, 0),
+  0
+);
+
+const customerTotal =
+  totalActualCost + (totalActualCost * marginPercent) / 100;
+
   const [activeDay, setActiveDay] = useState(0);
 const titleRef = useRef(null);
 const prevDayRef = useRef(activeDay);
@@ -157,18 +185,36 @@ useEffect(() => {
 
 
 
-  function addDay() {
-    setDays([
-      ...days,
-      {
-        title: `Day ${days.length + 1}`,
-        descriptionPoints: ["Click to add point"],
-        activities: [],
-        highlights: [],
+ function addDay() {
+  setDays([
+    ...days,
+    {
+      title: `Day ${days.length + 1}`,
+      descriptionPoints: ["Click to add point"],
+      activities: [],
+      highlights: [],
+      cost: {
+        hotel: 0,
+        transport: 0,
+        sightseeing: 0,
+        flight: 0,
+        misc: 0,
       },
-    ]);
-    setActiveDay(days.length);
-  }
+    },
+  ]);
+  setActiveDay(days.length);
+}
+
+function updateDayCost(dayIndex, key, value) {
+  setDays((prev) =>
+    prev.map((d, i) =>
+      i === dayIndex
+        ? { ...d, cost: { ...d.cost, [key]: value } }
+        : d
+    )
+  );
+}
+
 
  function updateDayTitle(value) {
   setDays((prev) =>
@@ -289,7 +335,12 @@ async function loadItinerary() {
 
   console.log("Loaded itinerary:", data); // ✅ debug
 
-  setClient({ name: data.clientName || "" });
+ setClient({
+  name: data.clientName || "",
+  phone: data.clientPhone || "",
+});
+  setReferenceBy(data.referenceBy || "");
+
   setTrip(data.trip || {});
   setDays(data.days || []);
   setInclusions(data.inclusions || []);
@@ -469,15 +520,43 @@ async function saveItinerary(data) {
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col">
-        
+
+      
+
       <AppHeader />
 
       <div className="flex flex-1 overflow-hidden">
         {/* SIDEBAR */}
         <aside className="w-60 bg-gray-50 border-r px-6 py-8">
+          <div className="flex gap-2 mb-6">
+  <button
+    onClick={() => setViewMode("ITINERARY")}
+    className={`flex-1 py-2 rounded-lg text-sm font-medium ${
+      viewMode === "ITINERARY"
+        ? "bg-blue-600 text-white"
+        : "bg-gray-200 text-black"
+    }`}
+  >
+    🗓 Itinerary
+  </button>
+
+  <button
+    onClick={() => setViewMode("INTERNAL")}
+    className={`flex-1 py-2 rounded-lg text-sm font-medium ${
+      viewMode === "INTERNAL"
+        ? "bg-blue-600 text-white"
+        : "bg-gray-200 text-black"
+    }`}
+  >
+    🛠 Internal
+  </button>
+</div>
+ 
+          {viewMode === "ITINERARY" && (<>
           <h2 className="text-sm font-semibold text-gray-800 mb-6">
             Itinerary Days
           </h2>
+          </>)} 
 
           <ul className="space-y-4">
             {days.map((_, i) => (
@@ -542,7 +621,9 @@ async function saveItinerary(data) {
 
         {/* CANVAS */}
 <main className="flex-1 overflow-y-auto py-10 px-6">
-<div className="relative max-w-3xl mx-auto bg-white rounded-2xl shadow-md px-10 py-10">
+{viewMode === "ITINERARY" && (
+  <>
+    <div className="relative max-w-3xl mx-auto bg-white rounded-2xl shadow-md px-10 py-10">
     {isFinal && (
   <div className="absolute inset-0 z-50 bg-transparent cursor-not-allowed" />
 )}
@@ -567,6 +648,27 @@ async function saveItinerary(data) {
 />
 
 </div>
+
+<div className="mb-4">
+  <label className="text-sm font-medium text-black">
+    Client Mobile Number
+  </label>
+  <input
+    value={client.phone}
+    disabled={isFinal}
+    onChange={(e) => {
+      if (isFinal) return;
+      setClient({ ...client, phone: e.target.value });
+    }}
+    placeholder="e.g. 1234567890"
+    className={`w-full mt-1 border rounded-lg px-3 py-2 text-black ${
+      isFinal
+        ? "bg-gray-100 cursor-not-allowed border-gray-200"
+        : "border-gray-300"
+    }`}
+  />
+</div>
+
 
 <div className="mt-14 mb-10">
   <h3 className="text-sm font-semibold text-black mb-4">
@@ -980,9 +1082,121 @@ async function saveItinerary(data) {
     📄 Download PDF
   </button>
 </div>
+</>
+)}
+
+{/* ================= INTERNAL VIEW ================= */}
+{viewMode === "INTERNAL" && (
+  <div className="max-w-3xl mx-auto bg-white rounded-2xl shadow-md px-10 py-10 text-black">
+
+    <h2 className="text-lg font-semibold mb-6 text-black ">
+      Internal Details
+    </h2>
+
+    {/* Reference By */}
+    <div className="mb-8">
+      <label className="text-sm font-medium text-black">
+        Reference By
+      </label>
+      <input
+        value={referenceBy}
+        onChange={(e) => setReferenceBy(e.target.value)}
+        placeholder="e.g. Facebook Lead, Hotel Partner"
+        className="w-full mt-1 border rounded-lg px-3 py-2 text-black"
+      />
+    </div>
+
+<h3 className="text-sm font-semibold mb-4 text-black">
+  Package Cost Breakdown (Per Day)
+</h3>
+
+<div className="space-y-4 max-h-[55vh] overflow-y-auto pr-2">
+
+{days.map((d, i) => {
+  const dayTotal = Object.values(d.cost || {}).reduce((a, b) => a + b, 0);
+
+  return (
+    <div key={i} className="border rounded-xl p-4 bg-gray-50">
+      <div className="font-semibold text-black mb-3">
+        Day {i + 1} — {d.title || "Untitled"}
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
+
+        {[
+          ["hotel", "Hotel"],
+          ["transport", "Taxi / Transport"],
+          ["sightseeing", "Sightseeing"],
+          ["flight", "Flight"],
+          ["misc", "Misc"],
+        ].map(([key, label]) => (
+          <div key={key}>
+            <label className="text-xs text-gray-700">
+              {label} (₹)
+            </label>
+            <input
+              type="number"
+              value={d.cost?.[key] === 0 ? "" : d.cost?.[key] || ""}
+
+              onChange={(e) => {
+  const val = e.target.value;
+  updateDayCost(i, key, val === "" ? 0 : Number(val));
+}}
+
+              className="w-full border rounded px-2 py-1 text-black"
+            />
+          </div>
+        ))}
+
+      </div>
+
+      <div className="mt-3 text-right font-semibold text-black">
+        Day Total: ₹{dayTotal.toLocaleString()}
+      </div>
+    </div>
+  );
+})}
+
+</div>
+
+{/* SUMMARY */}
+<div className="mt-6 border-t pt-4 space-y-3 text-black">
+
+  <div className="flex justify-between font-medium">
+    <span>Total Actual Cost</span>
+    <span>₹{totalActualCost.toLocaleString()}</span>
+  </div>
+
+  <div className="flex items-center justify-between gap-4">
+    <span className="font-medium">Margin (%)</span>
+    <input
+      type="number"
+      value={marginPercent === 0 ? "" : marginPercent}
+onChange={(e) =>
+  setMarginPercent(e.target.value === "" ? 0 : Number(e.target.value))
+}
+
+      className="w-24 border rounded px-2 py-1 text-black text-right"
+      placeholder="0"
+    />
+  </div>
+
+  <div className="flex justify-between text-lg font-bold">
+    <span>Total Cost to Customer</span>
+    <span className="text-green-700">
+      ₹{customerTotal.toLocaleString()}
+    </span>
+  </div>
+
+</div>
+  </div>
+)}
+
         </main>
       </div>
     </div>
+    
+    
   );
 
 }

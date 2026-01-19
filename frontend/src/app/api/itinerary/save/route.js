@@ -20,6 +20,9 @@ export async function POST(req) {
       client,
       accessToken,
       itineraryId,
+      clientPhone,
+      referenceBy,
+      marginPercent
     } = body;
 
     if (!accessToken) {
