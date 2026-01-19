@@ -26,6 +26,7 @@ const ICONS = {
   exclusion: img("images/pdf-icons/exclusion.png"),
   facebook: img("images/pdf-icons/facebook.png"),
   instagram: img("images/pdf-icons/instagram.png"),
+  phone: img("images/pdf-icons/phone.png"),
 };
 
 /* ---------- COLORS ---------- */
@@ -98,7 +99,7 @@ overviewValue: {
 logo: {
   width: 180,
   alignSelf: "flex-start",
-  marginTop: -18,   // 👈 ADD THIS
+  marginTop: -18,   
 },
 
 divider: {
@@ -114,11 +115,17 @@ tripHeader: {
   flexDirection: "row",
   justifyContent: "space-between",
   alignItems: "flex-start",
-  marginBottom: 20,
+  marginBottom: 26,
+  marginTop: 14,
 },
 
 tripLeft: {
   flex: 1,
+  paddingRight: 30,
+},
+
+tripRight: {
+  alignItems: "flex-end",
 },
 
 destinationText: {
@@ -133,31 +140,57 @@ preparedFor: {
   marginTop: 6,
 },
 
-tripRight: {
-  flexDirection: "column",
-  alignItems: "flex-end",
+preparedBlock: {
+  marginTop: 6,
 },
 
+
+preparedText: {
+  fontSize: 12,
+  color: "#222",
+},
+
+contactRow: {
+  flexDirection: "row",
+  alignItems: "center",
+  marginTop: 4,   // 👈 GAP between lines
+},
+
+contactIcon: {
+  width: 11,
+  height: 11,
+  marginRight: 6,
+},
+
+contactText: {
+  fontSize: 11,
+  color: "#222",
+},
+
+
 tripInfoBox: {
-  backgroundColor: "#FFF6EC",
+  backgroundColor: "#EEF3FF",
   borderRadius: 10,
   paddingVertical: 8,
   paddingHorizontal: 12,
   marginBottom: 8,
   minWidth: 160,
+  border: "1 solid #D6E0FF",
 },
+
 
 tripInfoLabel: {
   fontSize: 8,
-  color: "#777",
+  color: "#4A63D8",
   marginBottom: 2,
 },
 
 tripInfoValue: {
   fontSize: 11,
   fontWeight: "bold",
-  color: "#333",
+  color: "#1F4FD8",
 },
+
 
 
 
@@ -183,7 +216,7 @@ socialText: {
 
 page: {
   backgroundColor: BG,
-  paddingTop: 140,   // 🔑 content starts cleanly below header
+  paddingTop: 140,   
   paddingBottom: 110,
   paddingHorizontal: 40,
   fontFamily: "Helvetica",
@@ -243,14 +276,7 @@ page: {
     flex: 1,
     paddingLeft: 10,
   },
-  activityBlock: {
-  marginTop: 8,
-  backgroundColor: "#F7F9FC",
-  borderRadius: 10,
-  paddingVertical: 8,
-  paddingHorizontal: 10,
-  border: `1 solid ${BORDER}`,
-},
+
 
 mealBlock: {
   backgroundColor: "#EEF3FF",
@@ -258,31 +284,18 @@ mealBlock: {
   paddingHorizontal: 10,
   paddingVertical: 4,
 },
-mealText: {
-  fontSize: 9,
-  color: BLUE,
+
+ dayTitle: {
+  fontSize: 13,
+  fontWeight: "bold",
+  flex: 1,
 },
-
-
-  dayTitle: {
-    fontSize: 13,
-    fontWeight: "bold",
-    marginBottom: 6,
-  },
 
 
  dayTitleRow: {
   flexDirection: "row",
   alignItems: "center",
-  width: "100%",          // 🔑 REQUIRED
-},
-
-
-dayTitle: {
-  fontSize: 13,
-  fontWeight: "bold",
-  flexGrow: 1,   
-  flex: 1,         // 🔑 pushes meal to extreme right
+  width: "100%",      
 },
 
 
@@ -340,7 +353,7 @@ activityText: {
 highlightsBlock: {
   marginTop: 10,
   paddingTop: 8,
-  borderTop: `1 solid ${BORDER}`,   // subtle separator like sample
+  borderTop: `1 solid ${BORDER}`,  
 },
 
 highlightsTitle: {
@@ -396,7 +409,7 @@ highlightIndex: {
   highlightText: {
   fontSize: 10.5,
   color: "#333",
-  flexShrink: 1,        // 🔑 prevents broken words
+  flexShrink: 1,     
 },
   
 
@@ -517,7 +530,6 @@ export default function ItineraryPDF({ data = {} }) {
     <Document>
       <Page size="A4" style={styles.page} wrap>
 
-        {/* HEADER */}
 {/* HEADER */}
 <View fixed style={styles.header}>
   <Image src={img("Oggy-logo.png")} style={styles.logo} />
@@ -538,105 +550,61 @@ export default function ItineraryPDF({ data = {} }) {
 <View style={styles.divider} fixed />
 
 
+
 {/* TRIP SUMMARY */}
-{/* TRIP HEADER */}
+
 {data.trip && (
   <View style={styles.tripHeader}>
-    {/* LEFT : Destination */}
-    <View style={styles.tripLeft}>
-  {/* Destination */}
-  <Text style={styles.destinationText}>
-    {data.trip.destination}
-  </Text>
 
-  {/* Prepared for client */}
-  {data.client?.name && (
-    <Text style={styles.preparedFor}>
+    {/* LEFT */}
+    <View style={styles.tripLeft}>
+      <Text style={styles.destinationText}>
+        {data.trip.destination}
+      </Text>
+      
+
+      {data.client?.name && (
+  <View style={styles.preparedBlock}>
+    <Text style={styles.preparedText}>
       Prepared for {data.client.name} by Oggy Holidays
     </Text>
-  )}
-</View>
-{/* TRIP OVERVIEW CARD */}
-{data.trip && (
-  <View style={styles.overviewCard}>
-    <Text style={styles.overviewTitle}>Trip Overview</Text>
 
-    {/* ROW 1 */}
-    <View style={styles.overviewRow}>
-      <View style={styles.overviewItem}>
-        <Text style={styles.overviewLabel}>DESTINATION</Text>
-        <Text style={styles.overviewValue}>
-          {data.trip.destination}
-        </Text>
-      </View>
-
-      <View style={styles.overviewItem}>
-        <Text style={styles.overviewLabel}>DATES</Text>
-        <Text style={styles.overviewValue}>
-          {data.trip.startDate} – {data.trip.endDate}
-        </Text>
-      </View>
-    </View>
-
-    {/* ROW 2 */}
-    <View style={styles.overviewRow}>
-      <View style={styles.overviewItem}>
-        <Text style={styles.overviewLabel}>GUESTS</Text>
-        <Text style={styles.overviewValue}>
-          {data.trip.guests}
-        </Text>
-      </View>
-
-      {data.client?.phone && (
-        <View style={styles.overviewItem}>
-          <Text style={styles.overviewLabel}>CLIENT PHONE</Text>
-          <Text style={styles.overviewValue}>
-            {data.client.phone}
-          </Text>
-        </View>
-      )}
-    </View>
+   {(data.clientPhone || data.client?.phone) && (
+  <View style={styles.contactRow}>
+    <Image src={ICONS.phone} style={styles.contactIcon} />
+    <Text style={styles.contactText}>
+      
+      {data.clientPhone || data.client?.phone}
+    </Text>
   </View>
 )}
 
+  </View>
+)}
+</View>
 
 
-    
-
-    {/* RIGHT : Meta info */}
+    {/* RIGHT */}
     <View style={styles.tripRight}>
       <View style={styles.tripInfoBox}>
         <Text style={styles.tripInfoLabel}>TRAVEL DATES</Text>
         <Text style={styles.tripInfoValue}>
-          {data.trip.startDate} – {data.trip.endDate}
+          {data.trip.startDate || "-"} – {data.trip.endDate || "-"}
         </Text>
       </View>
 
       <View style={styles.tripInfoBox}>
         <Text style={styles.tripInfoLabel}>GUESTS</Text>
         <Text style={styles.tripInfoValue}>
-          {data.trip.guests}
+          {data.trip.guests || "-"}
         </Text>
       </View>
     </View>
+
   </View>
 )}
 
-
-
-
-        {/* TITLE */}
-       
-
-  
-
-
-
-
-        {/* DAYS */}
-        
-{/* DAYS */}
-/* DAYS */
+{/* DAYS */}        
 {(data.days || []).map((day, i) => {
   const meals = (day.activities || [])
     .filter((a) => a.type === "meal" && a.title)
@@ -752,19 +720,19 @@ export default function ItineraryPDF({ data = {} }) {
         <View style={styles.priceCard}>
   <View style={styles.priceRow}>
     <Text style={styles.priceLabel}>
-      Adults ({pricing.adults || 0}) × ₹{pricing.adultCost || 0}
+      Adults ({pricing.adults || 0}) × Rs {pricing.adultCost || 0}
     </Text>
     <Text style={styles.priceValue}>
-      ₹ {adultTotal.toLocaleString()}
+      Rs {adultTotal.toLocaleString()}
     </Text>
   </View>
 
   <View style={styles.priceRow}>
     <Text style={styles.priceLabel}>
-      Children ({pricing.children || 0}) × ₹{pricing.childCost || 0}
+      Children ({pricing.children || 0}) × Rs {pricing.childCost || 0}
     </Text>
     <Text style={styles.priceValue}>
-      ₹ {childTotal.toLocaleString()}
+      Rs {childTotal.toLocaleString()}
     </Text>
   </View>
 
@@ -776,7 +744,7 @@ export default function ItineraryPDF({ data = {} }) {
     }}
   >
     <Text style={styles.total}>
-      Grand Total: ₹ {grandTotal.toLocaleString()}
+      Grand Total: Rs {grandTotal.toLocaleString()}
     </Text>
   </View>
 </View>
@@ -811,4 +779,5 @@ export default function ItineraryPDF({ data = {} }) {
       </Page>
     </Document>
   );
+  
 }

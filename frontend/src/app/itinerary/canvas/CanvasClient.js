@@ -1079,7 +1079,7 @@ async function saveItinerary(data) {
           <div className="max-w-3xl mx-auto mt-4 flex justify-end">
   <button
     onClick={() =>
-      downloadPDF({ days, inclusions, exclusions, pricing, trip, client })
+      downloadPDF({ days, inclusions, exclusions, pricing, trip, client, clientPhone})
     }
     className="px-6 py-2 rounded-lg bg-orange-500 text-white hover:bg-orange-600"
   >
