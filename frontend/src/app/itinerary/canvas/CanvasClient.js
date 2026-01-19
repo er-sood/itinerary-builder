@@ -336,6 +336,11 @@ async function loadItinerary() {
  setClient({ name: data.clientName || "" });
 setClientPhone(data.clientPhone || "");
   setReferenceBy(data.referenceBy || "");
+  setMarginPercent(
+  data.marginPercent !== null && data.marginPercent !== undefined
+    ? String(data.marginPercent)
+    : ""
+);
 
   setTrip(data.trip || {});
   setDays(data.days || []);
