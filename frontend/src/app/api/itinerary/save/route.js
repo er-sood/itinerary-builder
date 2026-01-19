@@ -1,3 +1,5 @@
+export const runtime = "nodejs";
+
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { createClient } from "@supabase/supabase-js";
@@ -63,6 +65,9 @@ export async function POST(req) {
         data: {
           destination: trip.destination,
           clientName: client?.name || null,
+          clientPhone: clientPhone || null,
+          referenceBy: referenceBy || null,
+          marginPercent: marginPercent ?? null,
           trip,
           days,
           inclusions,
@@ -75,6 +80,9 @@ export async function POST(req) {
         data: {
           destination: trip.destination,
           clientName: client?.name || null,
+          clientPhone: clientPhone || null,
+          referenceBy: referenceBy || null,
+          marginPercent: marginPercent ?? null,
           trip,
           days,
           inclusions,

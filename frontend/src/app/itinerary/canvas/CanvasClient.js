@@ -497,6 +497,9 @@ async function saveItinerary(data) {
       pricing,
       trip,
       client,
+      clientPhone,
+      referenceBy,
+      marginPercent,
     });
   }}
   className={`px-6 py-2 rounded-lg text-white ${
@@ -639,7 +642,7 @@ async function saveItinerary(data) {
     if (isFinal) return;
     setClient({ name: e.target.value });
   }}
-  placeholder="e.g. Rahul Sharma"
+  placeholder="e.g. Client Full Name"
   className={`w-full mt-1 border rounded-lg px-3 py-2 text-black ${
     isFinal
       ? "bg-gray-100 cursor-not-allowed border-gray-200"
@@ -654,7 +657,7 @@ async function saveItinerary(data) {
     Client Mobile Number
   </label>
   <input
-    value={client.phone}
+    value={client.phone || ""}
     disabled={isFinal}
     onChange={(e) => {
       if (isFinal) return;

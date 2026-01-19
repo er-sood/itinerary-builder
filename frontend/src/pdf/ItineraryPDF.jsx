@@ -54,6 +54,45 @@ socialBlock: {
   marginTop: 25,
 },
 
+overviewCard: {
+  backgroundColor: "#FFFFFF",
+  borderRadius: 14,
+  border: `1 solid ${BORDER}`,
+  padding: 14,
+  marginBottom: 18,
+},
+
+overviewTitle: {
+  fontSize: 12,
+  fontWeight: "bold",
+  color: BLUE,
+  marginBottom: 8,
+},
+
+overviewRow: {
+  flexDirection: "row",
+  justifyContent: "space-between",
+},
+
+overviewItem: {
+  width: "32%",
+  backgroundColor: "#F7F9FC",
+  borderRadius: 10,
+  padding: 8,
+},
+
+overviewLabel: {
+  fontSize: 8,
+  color: "#777",
+  marginBottom: 2,
+},
+
+overviewValue: {
+  fontSize: 10.5,
+  fontWeight: "bold",
+  color: "#222",
+},
+
 
 
 logo: {
@@ -517,6 +556,49 @@ export default function ItineraryPDF({ data = {} }) {
     </Text>
   )}
 </View>
+{/* TRIP OVERVIEW CARD */}
+{data.trip && (
+  <View style={styles.overviewCard}>
+    <Text style={styles.overviewTitle}>Trip Overview</Text>
+
+    {/* ROW 1 */}
+    <View style={styles.overviewRow}>
+      <View style={styles.overviewItem}>
+        <Text style={styles.overviewLabel}>DESTINATION</Text>
+        <Text style={styles.overviewValue}>
+          {data.trip.destination}
+        </Text>
+      </View>
+
+      <View style={styles.overviewItem}>
+        <Text style={styles.overviewLabel}>DATES</Text>
+        <Text style={styles.overviewValue}>
+          {data.trip.startDate} – {data.trip.endDate}
+        </Text>
+      </View>
+    </View>
+
+    {/* ROW 2 */}
+    <View style={styles.overviewRow}>
+      <View style={styles.overviewItem}>
+        <Text style={styles.overviewLabel}>GUESTS</Text>
+        <Text style={styles.overviewValue}>
+          {data.trip.guests}
+        </Text>
+      </View>
+
+      {data.client?.phone && (
+        <View style={styles.overviewItem}>
+          <Text style={styles.overviewLabel}>CLIENT PHONE</Text>
+          <Text style={styles.overviewValue}>
+            {data.client.phone}
+          </Text>
+        </View>
+      )}
+    </View>
+  </View>
+)}
+
 
 
     
