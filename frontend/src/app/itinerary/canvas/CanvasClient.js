@@ -1087,18 +1087,7 @@ async function saveItinerary(data) {
 
 {/* ================= INTERNAL VIEW ================= */}
 {viewMode === "INTERNAL" && (
-  <div className="relative max-w-3xl mx-auto bg-white rounded-2xl shadow-md px-10 py-10">
-
-    {isFinal && (
-      <div className="absolute inset-0 z-50 bg-transparent cursor-not-allowed" />
-    )}
-    {isFinal && (
-  <div className="mb-4 text-sm text-red-600 font-medium">
-    🔒 This itinerary is finalized. Internal details are locked.
-  </div>
-)}
-
-
+  <div className="max-w-3xl mx-auto bg-white rounded-2xl shadow-md px-10 py-10 text-black">
 
     <h2 className="text-lg font-semibold mb-6 text-black ">
       Internal Details
