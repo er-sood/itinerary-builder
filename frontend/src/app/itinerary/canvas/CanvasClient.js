@@ -60,10 +60,8 @@ const itineraryId = searchParams.get("id");
 
 
 
-  const [client, setClient] = useState({
-  name: "",
-  phone: "",
-});
+const [client, setClient] = useState({ name: "" });
+const [clientPhone, setClientPhone] = useState("");
 const isFinal = status === "FINAL";
 
 
@@ -335,10 +333,8 @@ async function loadItinerary() {
 
   console.log("Loaded itinerary:", data); // ✅ debug
 
- setClient({
-  name: data.clientName || "",
-  phone: data.clientPhone || "",
-});
+ setClient({ name: data.clientName || "" });
+setClientPhone(data.clientPhone || "");
   setReferenceBy(data.referenceBy || "");
 
   setTrip(data.trip || {});
@@ -657,11 +653,11 @@ async function saveItinerary(data) {
     Client Mobile Number
   </label>
   <input
-    value={client.phone || ""}
+    value={clientPhone || ""}
     disabled={isFinal}
     onChange={(e) => {
       if (isFinal) return;
-      setClient({ ...client, phone: e.target.value });
+      setClientPhone(e.target.value);
     }}
     placeholder="e.g. 1234567890"
     className={`w-full mt-1 border rounded-lg px-3 py-2 text-black ${

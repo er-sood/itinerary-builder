@@ -67,7 +67,11 @@ export async function POST(req) {
           clientName: client?.name || null,
           clientPhone: clientPhone || null,
           referenceBy: referenceBy || null,
-          marginPercent: marginPercent ?? null,
+          marginPercent:
+  marginPercent !== "" && marginPercent !== null
+    ? Number(marginPercent)
+    : null,
+
           trip,
           days,
           inclusions,
@@ -82,7 +86,11 @@ export async function POST(req) {
           clientName: client?.name || null,
           clientPhone: clientPhone || null,
           referenceBy: referenceBy || null,
-          marginPercent: marginPercent ?? null,
+          marginPercent:
+  marginPercent !== "" && marginPercent !== null
+    ? Number(marginPercent)
+    : null,
+
           trip,
           days,
           inclusions,
