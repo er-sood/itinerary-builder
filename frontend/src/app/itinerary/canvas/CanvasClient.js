@@ -1087,7 +1087,18 @@ async function saveItinerary(data) {
 
 {/* ================= INTERNAL VIEW ================= */}
 {viewMode === "INTERNAL" && (
-  <div className="max-w-3xl mx-auto bg-white rounded-2xl shadow-md px-10 py-10 text-black">
+  <div className="relative max-w-3xl mx-auto bg-white rounded-2xl shadow-md px-10 py-10">
+
+    {isFinal && (
+      <div className="absolute inset-0 z-50 bg-transparent cursor-not-allowed" />
+    )}
+    {isFinal && (
+  <div className="mb-4 text-sm text-red-600 font-medium">
+    🔒 This itinerary is finalized. Internal details are locked.
+  </div>
+)}
+
+
 
     <h2 className="text-lg font-semibold mb-6 text-black ">
       Internal Details
@@ -1098,12 +1109,18 @@ async function saveItinerary(data) {
       <label className="text-sm font-medium text-black">
         Reference By
       </label>
-      <input
-        value={referenceBy}
-        onChange={(e) => setReferenceBy(e.target.value)}
-        placeholder="e.g. Facebook Lead, Hotel Partner"
-        className="w-full mt-1 border rounded-lg px-3 py-2 text-black"
-      />
+     <input
+  value={referenceBy}
+  disabled={isFinal}
+  onChange={(e) => {
+    if (isFinal) return;
+    setReferenceBy(e.target.value);
+  }}
+  className={`w-full mt-1 border rounded-lg px-3 py-2 text-black ${
+    isFinal ? "bg-gray-100 cursor-not-allowed" : ""
+  }`}
+/>
+
     </div>
 
 <h3 className="text-sm font-semibold mb-4 text-black">
@@ -1134,17 +1151,20 @@ async function saveItinerary(data) {
             <label className="text-xs text-gray-700">
               {label} (₹)
             </label>
-            <input
-              type="number"
-              value={d.cost?.[key] === 0 ? "" : d.cost?.[key] || ""}
+         <input
+  type="number"
+  disabled={isFinal}
+  value={d.cost?.[key] === 0 ? "" : d.cost?.[key] || ""}
+  onChange={(e) => {
+    if (isFinal) return;
+    const val = e.target.value;
+    updateDayCost(i, key, val === "" ? 0 : Number(val));
+  }}
+  className={`w-full border rounded px-2 py-1 text-black ${
+    isFinal ? "bg-gray-100 cursor-not-allowed" : ""
+  }`}
+/>
 
-              onChange={(e) => {
-  const val = e.target.value;
-  updateDayCost(i, key, val === "" ? 0 : Number(val));
-}}
-
-              className="w-full border rounded px-2 py-1 text-black"
-            />
           </div>
         ))}
 
@@ -1169,16 +1189,19 @@ async function saveItinerary(data) {
 
   <div className="flex items-center justify-between gap-4">
     <span className="font-medium">Margin (%)</span>
-    <input
-      type="number"
-      value={marginPercent === 0 ? "" : marginPercent}
-onChange={(e) =>
-  setMarginPercent(e.target.value === "" ? 0 : Number(e.target.value))
-}
+   <input
+  type="number"
+  disabled={isFinal}
+  value={marginPercent === 0 ? "" : marginPercent}
+  onChange={(e) => {
+    if (isFinal) return;
+    setMarginPercent(e.target.value === "" ? 0 : Number(e.target.value));
+  }}
+  className={`w-24 border rounded px-2 py-1 text-black text-right ${
+    isFinal ? "bg-gray-100 cursor-not-allowed" : ""
+  }`}
+/>
 
-      className="w-24 border rounded px-2 py-1 text-black text-right"
-      placeholder="0"
-    />
   </div>
 
   <div className="flex justify-between text-lg font-bold">
