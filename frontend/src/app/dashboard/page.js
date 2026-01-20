@@ -1,8 +1,54 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import AuthGuard from "@/components/AuthGuard";
 import Link from "next/link";
 import AppHeader from "@/components/AppHeader";
+import { supabase } from "@/lib/supabaseClient";
 
 export default function DashboardPage() {
+  const [role, setRole] = useState(null);
+  const router = useRouter();
+
+  useEffect(() => {
+    async function loadRole() {
+      try {
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+
+        if (!session) {
+          router.replace("/login");
+          return;
+        }
+
+        const res = await fetch("/api/auth/me", {
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+          },
+        });
+
+        if (!res.ok) {
+          console.error("ME API FAILED", res.status);
+          return;
+        }
+
+        const data = await res.json();
+        console.log("DASHBOARD ROLE:", data.role);
+        setRole(data.role);
+      } catch (err) {
+        console.error("ROLE LOAD ERROR", err);
+      }
+    }
+
+    loadRole();
+  }, [router]);
+
+  if (!role) return null; // wait till role loads
+
+  const isAdmin = role?.toUpperCase() === "ADMIN";
+
   return (
     <AuthGuard>
       <main className="min-h-screen flex flex-col bg-gradient-to-br from-blue-50 via-blue-100 to-blue-200 text-gray-900">
@@ -28,30 +74,32 @@ export default function DashboardPage() {
                 icon="🔍"
                 href="/itineraries"
               />
-              
-              
-              
-               <FeatureCard
+
+              <FeatureCard
                 title="Inventory"
                 description="Manage hotels and homestays"
                 icon="🏨"
                 href="/inventory"
               />
 
+              {/* ✅ ADMIN ONLY */}
+              {isAdmin && (
+                <>
+                  <FeatureCard
+                    title="Staff Performance"
+                    description="Track staff activity and productivity"
+                    icon="👥"
+                    href="/staff-performance"
+                  />
 
-              <FeatureCard
-                title="Staff Performance"
-                description="Track staff activity and productivity"
-                icon="👥"
-                href="/staff-performance"
-              />
-
-              <FeatureCard
-                title="Manage Users"
-                description="Create new users and delete existing users"
-                icon="➕"
-                href="/users"
-              />
+                  <FeatureCard
+                    title="Manage Users"
+                    description="Create new users and delete existing users"
+                    icon="➕"
+                    href="/users"
+                  />
+                </>
+              )}
 
               <FeatureCard
                 title="My Profile"

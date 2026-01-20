@@ -446,6 +446,7 @@ async function saveItinerary(data) {
 
 
   async function downloadPDF(data) {
+    
     try {
       const res = await fetch("/api/itinerary/pdf", {
         method: "POST",
@@ -455,10 +456,20 @@ async function saveItinerary(data) {
 
       const blob = await res.blob();
       const url = window.URL.createObjectURL(blob);
+      const destination = data?.trip?.destination || "Trip";
+    const clientName = data?.client?.name || "Client";
+
+    function clean(text) {
+      return text.replace(/[^a-z0-9]+/gi, "-").replace(/(^-|-$)/g, "");
+    }
+
+    const filename = `${clean(destination)}-Itinerary-for-${clean(
+      clientName
+    )}-by-Oggy-Holidays.pdf`;
 
       const a = document.createElement("a");
       a.href = url;
-      a.download = "Oggy-Holiday-Itinerary.pdf";
+      a.download = filename;
       document.body.appendChild(a);
       a.click();
       a.remove();
@@ -938,41 +949,45 @@ async function saveItinerary(data) {
 
             {/* INCLUSIONS */}
             <div className="bg-gray-50 border border-gray-200 rounded-xl p-6 mb-6">
-              <h3 className="text-base font-semibold text-black mb-4">
-                ✓ Inclusions
-              </h3>
-              <ul
-                contentEditable
-                suppressContentEditableWarning
-                className="list-disc pl-6 text-black space-y-2 outline-none"
-                onBlur={(e) => updateInclusions(e.currentTarget.innerText)}
-              >
-                {(inclusions.length ? inclusions : ["Click here to add inclusions"]).map(
-                  (item, i) => (
-                    <li key={i}>{item}</li>
-                  )
-                )}
-              </ul>
-            </div>
+  <h3 className="text-base font-semibold text-black mb-4">✓ Inclusions</h3>
+
+  <ul
+    contentEditable
+    suppressContentEditableWarning
+    className="list-disc pl-6 text-black space-y-2 outline-none"
+    onBlur={(e) => updateInclusions(e.currentTarget.innerText)}
+    dangerouslySetInnerHTML={{
+      __html: (inclusions.length
+        ? inclusions
+        : ["Click here to add inclusions"]
+      )
+        .map((i) => `<li>${i}</li>`)
+        .join(""),
+    }}
+  />
+</div>
+
 
             {/* EXCLUSIONS */}
             <div className="bg-gray-50 border border-gray-200 rounded-xl p-6 mb-8">
-              <h3 className="text-base font-semibold text-black mb-4">
-                ✗ Exclusions
-              </h3>
-              <ul
-                contentEditable
-                suppressContentEditableWarning
-                className="list-disc pl-6 text-black space-y-2 outline-none"
-                onBlur={(e) => updateExclusions(e.currentTarget.innerText)}
-              >
-                {(exclusions.length ? exclusions : ["Click here to add exclusions"]).map(
-                  (item, i) => (
-                    <li key={i}>{item}</li>
-                  )
-                )}
-              </ul>
-            </div>
+  <h3 className="text-base font-semibold text-black mb-4">✗ Exclusions</h3>
+
+  <ul
+    contentEditable
+    suppressContentEditableWarning
+    className="list-disc pl-6 text-black space-y-2 outline-none"
+    onBlur={(e) => updateExclusions(e.currentTarget.innerText)}
+    dangerouslySetInnerHTML={{
+      __html: (exclusions.length
+        ? exclusions
+        : ["Click here to add exclusions"]
+      )
+        .map((i) => `<li>${i}</li>`)
+        .join(""),
+    }}
+  />
+</div>
+
 
             {/* PAYMENT INFO */}
             <div className="bg-blue-50 border border-blue-200 rounded-xl p-6">

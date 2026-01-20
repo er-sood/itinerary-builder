@@ -27,6 +27,8 @@ const ICONS = {
   facebook: img("images/pdf-icons/facebook.png"),
   instagram: img("images/pdf-icons/instagram.png"),
   phone: img("images/pdf-icons/phone.png"),
+  qr: img("images/upi-qr.png"),
+
 };
 
 /* ---------- COLORS ---------- */
@@ -461,6 +463,63 @@ highlightIndex: {
     color: BLUE,
   },
 
+
+  /*Bank Section */
+paymentCard: {
+  backgroundColor: "#EEF3FF",   // same family as price card
+  borderRadius: 12,
+  padding: 16,
+  marginTop: 14,
+},
+
+paymentTitle: {
+  fontSize: 13,
+  fontWeight: "bold",
+  color: BLUE,
+  marginBottom: 10,
+},
+
+paymentRow: {
+  flexDirection: "row",
+  justifyContent: "space-between",
+  gap: 14,
+},
+
+bankBlock: {
+  flex: 1,
+},
+
+bankLine: {
+  fontSize: 10.5,
+  marginBottom: 4,
+  color: "#333",
+},
+
+upiBlock: {
+  width: 120,
+  alignItems: "center",
+},
+
+qrImage: {
+  width: 100,
+  height: 100,
+  marginBottom: 6,
+},
+
+upiText: {
+  fontSize: 9,
+  color: "#444",
+  textAlign: "center",
+},
+
+
+smallText: {
+  fontSize: 9,
+  color: "#333",
+  marginBottom: 2,
+},
+
+
   termsText: {
   fontSize: 10,
   marginBottom: 4,
@@ -521,6 +580,7 @@ highlightIndex: {
 /* ---------- COMPONENT ---------- */
 
 export default function ItineraryPDF({ data = {} }) {
+  
   const pricing = data.pricing || {};
   const adultTotal = (pricing.adults || 0) * (pricing.adultCost || 0);
   const childTotal = (pricing.children || 0) * (pricing.childCost || 0);
@@ -529,6 +589,7 @@ export default function ItineraryPDF({ data = {} }) {
   return (
     <Document>
       <Page size="A4" style={styles.page} wrap>
+        console.log("PDF DATA:", data);
 
 {/* HEADER */}
 <View fixed style={styles.header}>
@@ -715,8 +776,12 @@ export default function ItineraryPDF({ data = {} }) {
             </View>
           ))}
         </View>
+        </Page>
+
+
 
         {/* PRICING */}
+        <Page size="A4" style={styles.page} wrap>
         <View style={styles.priceCard}>
   <View style={styles.priceRow}>
     <Text style={styles.priceLabel}>
@@ -748,6 +813,35 @@ export default function ItineraryPDF({ data = {} }) {
     </Text>
   </View>
 </View>
+
+{/* PAYMENT DETAILS */}
+<View style={styles.paymentCard}>
+  <Text style={styles.paymentTitle}>Payment Details</Text>
+
+  <View style={styles.paymentRow}>
+
+    {/* BANK DETAILS */}
+    <View style={styles.bankBlock}>
+      <Text style={styles.bankLine}>Bank: Indusind Bank</Text>
+      <Text style={styles.bankLine}>Account Name: Oggy Holidays</Text>
+      <Text style={styles.bankLine}>Account No: 259418755304</Text>
+      <Text style={styles.bankLine}>Account Type: CURRENT ACCOUNT</Text>
+      <Text style={styles.bankLine}>RTGS/IFSC CODE: INDB0001486</Text>
+      <Text style={styles.bankLine}>Branch: Palampur (HP)</Text>
+    </View>
+
+    {/* UPI QR */}
+    <View style={styles.upiBlock}>
+      <Image src={ICONS.qr} style={styles.qrImage} />
+      <Text style={styles.upiText}>UPI ID : im.259418755304@indus</Text>
+      <Text style={styles.upiText}>Scan QR to Pay</Text>
+    </View>
+
+  </View>
+</View>
+
+
+
 {/* TERMS & CONDITIONS */}
 <View style={styles.sectionCard}>
   <Text style={styles.sectionTitle}>Terms & Conditions</Text>
@@ -776,7 +870,7 @@ export default function ItineraryPDF({ data = {} }) {
           <Image src={img("Oggy-footer.png")} style={styles.footerImg} />
         </View>
 
-      </Page>
+        </Page>
     </Document>
   );
   

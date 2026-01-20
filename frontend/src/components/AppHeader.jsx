@@ -34,9 +34,13 @@ export default function AppHeader() {
 
       {/* Actions */}
       <div className="flex items-center gap-6">
-        <button className="text-sm font-medium text-gray-700 hover:text-blue-700 transition">
-          My Profile
-        </button>
+        <Link
+  href="/profile"
+  className="text-sm font-medium text-gray-700 hover:text-blue-700 transition"
+>
+  My Profile
+</Link>
+
 
         <button
           onClick={handleLogout}
