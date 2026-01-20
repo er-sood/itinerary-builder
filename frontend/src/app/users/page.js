@@ -4,9 +4,10 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import AppHeader from "@/components/AppHeader";
 import { supabase } from "@/lib/supabaseClient";
-
+import BackButton from "@/components/BackButton";
 
 export default function ManageUsersPage() {
+  
   const router = useRouter();
 
   const [loading, setLoading] = useState(true);
@@ -106,10 +107,15 @@ export default function ManageUsersPage() {
       <AppHeader />
 
       <div className="flex-1 px-6 py-12">
-        <div className="max-w-4xl mx-auto">
-          <h1 className="text-2xl font-semibold text-black mb-6">
-            Manage Users
-          </h1>
+  <div className="max-w-4xl mx-auto">
+
+    {/* ✅ BACK BUTTON */}
+    <BackButton label="Back to Dashboard" />
+
+    <h1 className="text-2xl font-semibold text-black mb-6">
+      Manage Users
+    </h1>
+
 
           {/* Create User */}
           <form
