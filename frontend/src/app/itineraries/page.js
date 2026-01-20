@@ -106,12 +106,7 @@ const res = await fetch(
           Browse Itineraries
         </h1>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-8">
-  <input
-    value={query}
-    onChange={(e) => setQuery(e.target.value)}
-    placeholder="Destination"
-    className="border px-4 py-2 rounded text-black"
-  />
+ 
 
   <input
     value={client}
