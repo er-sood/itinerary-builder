@@ -90,7 +90,7 @@ const token = authHeader.replace("Bearer ", "");
     user: {                 // 👈 relation
       select: {
         email: true,
-        name: true,         // if you have name column
+        role: true,         // if you have name column
       },
     },
   },
