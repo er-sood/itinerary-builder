@@ -54,8 +54,7 @@ async function loadUsers() {
   q: query,
   client,
   preparedBy,
-  reference,
-});
+  status,});
 
 const res = await fetch(
   `/api/itinerary/list?search=${encodeURIComponent(search)}&preparedBy=${preparedBy}&status=${status}`,
