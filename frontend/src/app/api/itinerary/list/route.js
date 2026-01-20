@@ -14,11 +14,13 @@ const supabase = createClient(
 export async function GET(req) {
   try {
     const { searchParams } = new URL(req.url);
-    const q = searchParams.get("q") || "";
+    const search = searchParams.get("search") || "";
+    const preparedBy = searchParams.get("preparedBy");
+    const status = searchParams.get("status");
+    const reference = searchParams.get("reference");
     const authHeader = req.headers.get("authorization");
-    const preparedBy = searchParams.get("preparedBy") || "";
     const client = searchParams.get("client") || "";
-    const reference = searchParams.get("reference") || "";
+    
 
 if (!authHeader) {
   return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -50,64 +52,45 @@ const token = authHeader.replace("Bearer ", "");
     const isAdmin = dbUser.role === "ADMIN";
 
     // build where condition
-    const filters = [];
+const baseSearch = search
+  ? {
+      OR: [
+        { destination: { contains: search, mode: "insensitive" } },
+        { clientName: { contains: search, mode: "insensitive" } },
+        { reference: { contains: search, mode: "insensitive" } },
+      ],
+    }
+  : {};
+const filters = [];
 
-if (q) {
-  filters.push({
-    destination: {
-      contains: q,
-      mode: "insensitive",
-    },
-  });
-}
-
-if (client) {
-  filters.push({
-    clientName: {
-      contains: client,
-      mode: "insensitive",
-    },
-  });
-}
-
+if (preparedBy) filters.push({ createdBy: preparedBy });
+if (status) filters.push({ status });
 if (reference) {
   filters.push({
-    referenceBy: {
-      contains: reference,
-      mode: "insensitive",
-    },
-  });
-}
-
-if (preparedBy) {
-  filters.push({
-    user: {
-      email: {
-        contains: preparedBy,
-        mode: "insensitive",
-      },
-    },
+    reference: { contains: reference, mode: "insensitive" },
   });
 }
 
 
-    let where;
+
+  let where;
 
 if (isAdmin) {
-  where = filters.length ? { AND: filters } : {};
+  where = {
+    AND: [baseSearch, ...filters],
+  };
 } else {
   where = {
     AND: [
-      ...(filters.length ? filters : []),
+      baseSearch,
+      ...filters,
       {
-        OR: [
-          { createdBy: user.id },
-          { status: "FINAL" },
-        ],
+        OR: [{ createdBy: user.id }, { status: "FINAL" }],
       },
     ],
   };
 }
+
 
 
     const items = await prisma.itinerary.findMany({

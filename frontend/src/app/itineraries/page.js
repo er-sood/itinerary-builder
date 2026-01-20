@@ -13,6 +13,29 @@ export default function BrowseItinerariesPage() {
   const [client, setClient] = useState("");
 const [preparedBy, setPreparedBy] = useState("");
 const [reference, setReference] = useState("");
+const [search, setSearch] = useState("");
+
+const [status, setStatus] = useState("");
+const [users, setUsers] = useState([]);
+
+async function loadUsers() {
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  if (!session) return;
+
+  const res = await fetch("/api/admin/staff", {
+    headers: {
+      Authorization: `Bearer ${session.access_token}`,
+    },
+  });
+
+  if (res.ok) {
+    const data = await res.json();
+    setUsers(data);
+  }
+}
 
 
   async function load() {
@@ -36,13 +59,14 @@ const [reference, setReference] = useState("");
 });
 
 const res = await fetch(
-  `/api/itinerary/list?${params.toString()}`,
+  `/api/itinerary/list?search=${encodeURIComponent(search)}&preparedBy=${preparedBy}&status=${status}&reference=${encodeURIComponent(reference)}`,
   {
     headers: {
       Authorization: `Bearer ${session.access_token}`,
     },
   }
 );
+
 
 
 
@@ -61,6 +85,7 @@ const res = await fetch(
 
   useEffect(() => {
     load();
+    loadUsers();
   }, []);
 
   // ✅ DUPLICATE FINALIZED ITINERARY
@@ -105,38 +130,13 @@ const res = await fetch(
         <h1 className="text-2xl font-semibold mb-6 text-black">
           Browse Itineraries
         </h1>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-8">
- 
-
-  <input
-    value={client}
-    onChange={(e) => setClient(e.target.value)}
-    placeholder="Client name"
-    className="border px-4 py-2 rounded text-black"
-  />
-
-  <input
-    value={preparedBy}
-    onChange={(e) => setPreparedBy(e.target.value)}
-    placeholder="Prepared by (email)"
-    className="border px-4 py-2 rounded text-black"
-  />
-
-  <input
-    value={reference}
-    onChange={(e) => setReference(e.target.value)}
-    placeholder="Reference"
-    className="border px-4 py-2 rounded text-black"
-  />
-</div>
-
-
+       
         {/* SEARCH */}
         <div className="flex gap-3 mb-8">
           <input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search by destination (e.g. Manali)"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search by destination/Client Name/Reference"
             className="flex-1 border border-gray-300 rounded-lg px-4 py-2 text-black"
           />
 
@@ -147,6 +147,59 @@ const res = await fetch(
             Search
           </button>
         </div>
+
+
+{/* FILTER ROW */}
+<div className="flex flex-wrap gap-4 mb-8 items-center">
+
+  {/* Prepared By */}
+  <select
+    value={preparedBy}
+    onChange={(e) => setPreparedBy(e.target.value)}
+    className="border border-gray-300 rounded-lg px-3 py-2 text-black"
+  >
+    <option value="">Prepared By (All)</option>
+    {users.map((u) => (
+      <option key={u.id} value={u.id}>
+        {u.email}
+      </option>
+    ))}
+  </select>
+
+  {/* Status */}
+  <select
+    value={status}
+    onChange={(e) => setStatus(e.target.value)}
+    className="border border-gray-300 rounded-lg px-3 py-2 text-black"
+  >
+    <option value="">All Status</option>
+    <option value="DRAFT">Draft</option>
+    <option value="FINAL">Finalized</option>
+  </select>
+
+  {/* Reference */}
+  <input
+    value={reference}
+    onChange={(e) => setReference(e.target.value)}
+    placeholder="Reference"
+    className="border border-gray-300 rounded-lg px-3 py-2 text-black"
+  />
+
+  {/* Clear */}
+  <button
+    onClick={() => {
+      setSearch("");
+      setPreparedBy("");
+      setStatus("");
+      setReference("");
+      load();
+    }}
+    className="text-sm text-gray-600 underline"
+  >
+    Clear Filters
+  </button>
+
+</div>
 
         {/* LIST */}
         {loading ? (
