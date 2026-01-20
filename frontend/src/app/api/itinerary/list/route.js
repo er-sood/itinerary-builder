@@ -10,11 +10,6 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 );
 
-const clientName = searchParams.get("client") || "";
-const preparedBy = searchParams.get("preparedBy") || "";
-const referenceBy = searchParams.get("referenceBy") || "";
-
-
 
 export async function GET(req) {
   try {
