@@ -30,16 +30,18 @@ export async function POST(req) {
     const body = await req.json();
 
     const {
-      name,
-      type,
-      country,
-      state,
-      city,
-      stars,
-      contactPerson,
-      approxPrice,
-      notes,
-    } = body;
+  name,
+  type,
+  country,
+  state,
+  city,
+  starRating,
+  contactPerson,
+  contactPhone,
+  approxPrice,   // 👈 this will store "approx price + notes"
+  websiteLink,
+} = body;
+
 
     if (!name || !type || !country || !state || !city) {
       return NextResponse.json(
@@ -49,19 +51,21 @@ export async function POST(req) {
     }
 
     const property = await prisma.property.create({
-      data: {
-        name,
-        type,
-        country,
-        state,
-        city,
-        stars: type === "HOMESTAY" ? null : stars,
-        contactPerson,
-        approxPrice,
-        notes,
-        createdBy: user.id,
-      },
-    });
+  data: {
+    name,
+    type,
+    country,
+    state,
+    city,
+    starRating: type === "HOMESTAY" ? null : starRating ? Number(starRating) : null,
+    contactPerson,
+    contactPhone,
+    approxPrice,
+    websiteLink,
+    createdBy: user.id,
+  },
+});
+
 
     return NextResponse.json(property);
   } catch (err) {

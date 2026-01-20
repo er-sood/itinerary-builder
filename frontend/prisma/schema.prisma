@@ -45,8 +45,9 @@ model Property {
   state         String
   city          String
   starRating    Int?
-  contactPerson String
+  contactPerson String?
   contactPhone  String?
+  approxPrice   String?
   websiteLink   String?
 
   createdBy     String

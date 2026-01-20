@@ -10,37 +10,39 @@ export default function InventoryPage() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const [form, setForm] = useState({
-    name: "",
-    type: "",
-    country: "",
-    state: "",
-    city: "",
-    stars: "",
-    contactName: "",
-    contactPhone: "",
-    link: "",
-    notes: "",
-  });
+const [form, setForm] = useState({
+  name: "",
+  type: "",
+  country: "",
+  state: "",
+  city: "",
+  starRating: "",
+  contactPerson: "",
+  contactPhone: "",
+  websiteLink: "",
+  approxPrice: "",
+});
+
 
   function updateForm(key, value) {
     setForm((prev) => ({ ...prev, [key]: value }));
   }
 
   function resetForm() {
-    setForm({
-      name: "",
-      type: "",
-      country: "",
-      state: "",
-      city: "",
-      stars: "",
-      contactName: "",
-      contactPhone: "",
-      link: "",
-      notes: "",
-    });
-  }
+  setForm({
+    name: "",
+    type: "",
+    country: "",
+    state: "",
+    city: "",
+    starRating: "",
+    contactPerson: "",
+    contactPhone: "",
+    websiteLink: "",
+    approxPrice: "",
+  });
+}
+
 
   /* ================= LOAD INVENTORY ================= */
 
@@ -86,7 +88,7 @@ export default function InventoryPage() {
         },
         body: JSON.stringify({
           ...form,
-          stars: form.type === "HOMESTAY" ? null : Number(form.stars || 0),
+          starRating: form.type === "HOMESTAY" ? null : Number(form.starRating || 0),
         }),
       });
 
@@ -152,21 +154,21 @@ export default function InventoryPage() {
                       {p.city}, {p.state}, {p.country}
                     </p>
 
-                    {p.stars && (
-                      <p className="text-sm mt-1">⭐ {p.stars} Star</p>
+                    {p.starRating && (
+                      <p className="text-sm mt-1">⭐ {p.starRating} Star</p>
                     )}
 
-                    {p.contactName && (
-                      <p className="text-sm mt-2">👤 {p.contactName}</p>
+                    {p.contactPerson && (
+                      <p className="text-sm mt-2">👤 {p.contactPerson}</p>
                     )}
 
                     {p.contactPhone && (
                       <p className="text-sm">📞 {p.contactPhone}</p>
                     )}
 
-                    {p.notes && (
+                    {p.approxPrice && (
                       <p className="text-xs text-gray-600 mt-2">
-                        📝 {p.notes}
+                        📝 {p.approxPrice}
                       </p>
                     )}
 
@@ -233,9 +235,9 @@ export default function InventoryPage() {
                       ? "bg-gray-100 cursor-not-allowed"
                       : ""
                   }`}
-                  value={form.stars}
+                  value={form.starRating}
                   disabled={form.type === "HOMESTAY"}
-                  onChange={(e) => updateForm("stars", e.target.value)}
+                  onChange={(e) => updateForm("starRating", e.target.value)}
                 >
                   <option value="">Star Rating (Hotel)</option>
                   <option value="1">⭐ 1 Star</option>
@@ -248,8 +250,8 @@ export default function InventoryPage() {
                 <input
                   placeholder="Contact Person Name"
                   className="border rounded-lg px-4 py-2"
-                  value={form.contactName}
-                  onChange={(e) => updateForm("contactName", e.target.value)}
+                  value={form.contactPerson}
+                  onChange={(e) => updateForm("contactPerson", e.target.value)}
                 />
 
                 <input
@@ -262,16 +264,16 @@ export default function InventoryPage() {
                 <input
                   placeholder="Website / Google Maps Link"
                   className="border rounded-lg px-4 py-2 md:col-span-2"
-                  value={form.link}
-                  onChange={(e) => updateForm("link", e.target.value)}
+                  value={form.websiteLink}
+                  onChange={(e) => updateForm("websiteLink", e.target.value)}
                 />
 
                 <textarea
                   placeholder="Notes / Approx Price"
                   className="border rounded-lg px-4 py-2 md:col-span-2 resize-none"
                   rows={3}
-                  value={form.notes}
-                  onChange={(e) => updateForm("notes", e.target.value)}
+                  value={form.approxPrice}
+                  onChange={(e) => updateForm("approxPrice", e.target.value)}
                 />
               </div>
 
