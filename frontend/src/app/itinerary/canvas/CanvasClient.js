@@ -8,6 +8,7 @@ import { supabase } from "@/lib/supabaseClient";
 import AppHeader from "@/components/AppHeader";
 
 import { useSearchParams } from "next/navigation";
+import BackButton from "@/components/BackButton";
 
 
 
@@ -528,6 +529,9 @@ async function saveItinerary(data) {
       
 
       <AppHeader />
+      <div className="max-w-6xl mx-auto px-6 py-6">
+  <BackButton label="Back to Itineraries" />
+</div>
 
       <div className="flex flex-1 overflow-hidden">
         {/* SIDEBAR */}
