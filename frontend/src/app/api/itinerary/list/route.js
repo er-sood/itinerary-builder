@@ -76,19 +76,26 @@ const token = authHeader.replace("Bearer ", "");
     }
 
     const items = await prisma.itinerary.findMany({
-      where,
-      orderBy: {
-        createdAt: "desc",
-      },
+  where,
+  orderBy: {
+    createdAt: "desc",
+  },
+  select: {
+    id: true,
+    destination: true,
+    clientName: true,
+    createdAt: true,
+    status: true,
+    createdBy: true,
+    user: {                 // 👈 relation
       select: {
-        id: true,
-        destination: true,
-        clientName: true,
-        createdAt: true,
-        status: true,
-        createdBy: true,
+        email: true,
+        name: true,         // if you have name column
       },
-    });
+    },
+  },
+});
+
 
     return NextResponse.json(items);
   } catch (error) {

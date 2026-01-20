@@ -145,6 +145,18 @@ export default function BrowseItinerariesPage() {
                     Prepared for {it.clientName}
                   </p>
                 )}
+                {it.user?.email && (
+  <p className="text-xs text-gray-500 mt-1">
+    Prepared by: <span className="font-medium">{it.user.email}</span>
+  </p>
+)}
+
+{it.user?.email && (
+  <span className="text-[11px] bg-gray-100 text-gray-700 px-2 py-1 rounded-full">
+    👤 {it.user.email}
+  </span>
+)}
+
 
                 <p className="text-xs text-gray-500 mt-3">
                   Created on{" "}
