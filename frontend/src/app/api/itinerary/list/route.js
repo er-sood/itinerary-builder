@@ -17,7 +17,7 @@ export async function GET(req) {
     const search = searchParams.get("search") || "";
     const preparedBy = searchParams.get("preparedBy");
     const status = searchParams.get("status");
-    const reference = searchParams.get("reference");
+
     const authHeader = req.headers.get("authorization");
     const client = searchParams.get("client") || "";
     
@@ -57,6 +57,7 @@ const baseSearch = search
       OR: [
         { destination: { contains: search, mode: "insensitive" } },
         { clientName: { contains: search, mode: "insensitive" } },
+        { referenceBy: { contains: search, mode: "insensitive" } },
       ],
     }
   : {};
