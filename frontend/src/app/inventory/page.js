@@ -5,7 +5,10 @@ import AppHeader from "@/components/AppHeader";
 import AuthGuard from "@/components/AuthGuard";
 import { supabase } from "@/lib/supabaseClient";
 
+
 export default function InventoryPage() {
+    const [viewItem, setViewItem] = useState(null);
+
   const [showModal, setShowModal] = useState(false);
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -139,9 +142,11 @@ const [form, setForm] = useState({
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {items.map((p) => (
                   <div
-                    key={p.id}
-                    className="bg-white rounded-xl p-5 shadow hover:shadow-md transition"
-                  >
+  key={p.id}
+  onClick={() => setViewItem(p)}
+  className="bg-white rounded-xl p-5 shadow hover:shadow-md transition cursor-pointer"
+>
+
                     <div className="flex justify-between items-start">
                       <h3 className="font-semibold text-black">{p.name}</h3>
 
@@ -167,10 +172,22 @@ const [form, setForm] = useState({
                     )}
 
                     {p.approxPrice && (
-                      <p className="text-xs text-gray-600 mt-2">
-                        📝 {p.approxPrice}
-                      </p>
-                    )}
+  <p className="text-xs text-gray-600 mt-2">
+    📝 {p.approxPrice}
+  </p>
+)}
+
+{p.websiteLink && (
+  <a
+    href={p.websiteLink}
+    target="_blank"
+    rel="noopener noreferrer"
+    className="inline-block mt-2 text-sm text-blue-600 hover:underline"
+  >
+    📍 Open Map / Website
+  </a>
+)}
+
 
                     <p className="text-xs text-gray-500 mt-3">
                       Added by {p.user?.email || "Unknown"}
@@ -297,7 +314,75 @@ const [form, setForm] = useState({
               </div>
             </div>
           </div>
+
+          
         )}
+        {viewItem && (
+  <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+    <div className="bg-white rounded-2xl w-full max-w-xl p-8 shadow-lg">
+      <h2 className="text-xl font-semibold mb-4 text-black">
+        {viewItem.name}
+      </h2>
+
+      <p className="text-sm mb-1">
+        <b>Type:</b> {viewItem.type}
+      </p>
+
+      <p className="text-sm mb-1">
+        <b>Location:</b> {viewItem.city}, {viewItem.state}, {viewItem.country}
+      </p>
+
+      {viewItem.starRating && (
+        <p className="text-sm mb-1">
+          <b>Stars:</b> ⭐ {viewItem.starRating}
+        </p>
+      )}
+
+      {viewItem.contactPerson && (
+        <p className="text-sm mb-1">
+          <b>Contact:</b> {viewItem.contactPerson}
+        </p>
+      )}
+
+      {viewItem.contactPhone && (
+        <p className="text-sm mb-1">
+          <b>Phone:</b> {viewItem.contactPhone}
+        </p>
+      )}
+
+      {viewItem.approxPrice && (
+        <p className="text-sm mt-2">
+          <b>Notes / Price:</b> {viewItem.approxPrice}
+        </p>
+      )}
+
+      {viewItem.websiteLink && (
+        <a
+          href={viewItem.websiteLink}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-block mt-3 text-blue-600 hover:underline"
+        >
+          📍 Open Map / Website
+        </a>
+      )}
+
+      <p className="text-xs text-gray-500 mt-4">
+        Added by {viewItem.user?.email || "Unknown"}
+      </p>
+
+      <div className="flex justify-end mt-6">
+        <button
+          onClick={() => setViewItem(null)}
+          className="px-5 py-2 rounded-lg border"
+        >
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
       </main>
     </AuthGuard>
   );
