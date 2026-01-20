@@ -12,6 +12,9 @@ export default function InventoryPage() {
   const [showModal, setShowModal] = useState(false);
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+const [typeFilter, setTypeFilter] = useState("ALL");
+
 
 const [form, setForm] = useState({
   name: "",
@@ -110,6 +113,19 @@ const [form, setForm] = useState({
     }
   }
 
+  const filteredItems = items.filter((p) => {
+  const text =
+    `${p.name} ${p.city} ${p.state} ${p.country}`.toLowerCase();
+
+  const matchesSearch = text.includes(search.toLowerCase());
+
+  const matchesType =
+    typeFilter === "ALL" || p.type === typeFilter;
+
+  return matchesSearch && matchesType;
+});
+
+
   return (
     <AuthGuard>
       <main className="min-h-screen flex flex-col bg-gradient-to-br from-blue-50 via-blue-100 to-blue-200 text-gray-900">
@@ -131,16 +147,39 @@ const [form, setForm] = useState({
               </button>
             </div>
 
-            {/* PROPERTY LIST */}
-            {loading ? (
+           {/* SEARCH + FILTER */}
+<div className="flex flex-col md:flex-row gap-4 mb-6">
+  <input
+    placeholder="Search by name, city, state or country..."
+    className="flex-1 border rounded-lg px-4 py-2"
+    value={search}
+    onChange={(e) => setSearch(e.target.value)}
+  />
+
+  <select
+    className="border rounded-lg px-4 py-2 md:w-48"
+    value={typeFilter}
+    onChange={(e) => setTypeFilter(e.target.value)}
+  >
+    <option value="ALL">All Types</option>
+    <option value="HOTEL">Hotel</option>
+    <option value="HOMESTAY">Homestay</option>
+  </select>
+</div>
+
+{/* PROPERTY LIST */}
+{loading ? (
+
               <p className="text-gray-600">Loading...</p>
-            ) : items.length === 0 ? (
+            ) : filteredItems.length === 0 ? (
+
               <div className="bg-white rounded-xl p-8 text-center text-gray-500 shadow">
                 No properties added yet.
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {items.map((p) => (
+                {filteredItems.map((p) => (
+
                   <div
   key={p.id}
   onClick={() => setViewItem(p)}
