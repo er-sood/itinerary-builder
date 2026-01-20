@@ -12,7 +12,6 @@ export default function BrowseItinerariesPage() {
   const router = useRouter();
   const [client, setClient] = useState("");
 const [preparedBy, setPreparedBy] = useState("");
-const [reference, setReference] = useState("");
 const [search, setSearch] = useState("");
 
 const [status, setStatus] = useState("");
@@ -59,13 +58,14 @@ async function loadUsers() {
 });
 
 const res = await fetch(
-  `/api/itinerary/list?search=${encodeURIComponent(search)}&preparedBy=${preparedBy}&status=${status}&reference=${encodeURIComponent(reference)}`,
+  `/api/itinerary/list?search=${encodeURIComponent(search)}&preparedBy=${preparedBy}&status=${status}`,
   {
     headers: {
       Authorization: `Bearer ${session.access_token}`,
     },
   }
 );
+
 
 
 
@@ -177,13 +177,6 @@ const res = await fetch(
     <option value="FINAL">Finalized</option>
   </select>
 
-  {/* Reference */}
-  <input
-    value={reference}
-    onChange={(e) => setReference(e.target.value)}
-    placeholder="Reference"
-    className="border border-gray-300 rounded-lg px-3 py-2 text-black"
-  />
 
   {/* Clear */}
   <button
@@ -191,7 +184,6 @@ const res = await fetch(
       setSearch("");
       setPreparedBy("");
       setStatus("");
-      setReference("");
       load();
     }}
     className="text-sm text-gray-600 underline"

@@ -57,20 +57,14 @@ const baseSearch = search
       OR: [
         { destination: { contains: search, mode: "insensitive" } },
         { clientName: { contains: search, mode: "insensitive" } },
-        { reference: { contains: search, mode: "insensitive" } },
       ],
     }
   : {};
+
 const filters = [];
 
 if (preparedBy) filters.push({ createdBy: preparedBy });
 if (status) filters.push({ status });
-if (reference) {
-  filters.push({
-    reference: { contains: reference, mode: "insensitive" },
-  });
-}
-
 
 
   let where;
@@ -90,6 +84,7 @@ if (isAdmin) {
     ],
   };
 }
+
 
 
 
