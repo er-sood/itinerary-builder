@@ -21,6 +21,9 @@ export async function GET(req) {
     const { searchParams } = new URL(req.url);
     const q = searchParams.get("q") || "";
     const authHeader = req.headers.get("authorization");
+    const preparedBy = searchParams.get("preparedBy") || "";
+    const client = searchParams.get("client") || "";
+    const reference = searchParams.get("reference") || "";
 
 if (!authHeader) {
   return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
