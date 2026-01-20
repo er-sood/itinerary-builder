@@ -28,6 +28,16 @@ export default function DashboardPage() {
                 icon="🔍"
                 href="/itineraries"
               />
+              
+              
+              
+               <FeatureCard
+                title="Inventory"
+                description="Manage hotels and homestays"
+                icon="🏨"
+                href="/inventory"
+              />
+
 
               <FeatureCard
                 title="Staff Performance"

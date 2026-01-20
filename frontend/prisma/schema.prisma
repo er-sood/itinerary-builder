@@ -34,4 +34,29 @@ model User {
   role        String
   createdAt   DateTime    @default(now())
   itineraries Itinerary[] @relation("UserItineraries")
+  properties  Property[] @relation("UserProperties")
+}
+
+model Property {
+  id            String   @id @default(uuid())
+  name          String
+  type          String   // HOTEL | HOMESTAY
+  country       String
+  state         String
+  city          String
+  starRating    Int?
+  contactPerson String
+  contactPhone  String?
+  websiteLink   String?
+
+  createdBy     String
+  createdAt     DateTime @default(now())
+
+  user          User     @relation("UserProperties", fields: [createdBy], references: [id])
+}
+
+
+enum PropertyType {
+  HOTEL
+  HOMESTAY
 }
