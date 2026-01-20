@@ -10,6 +10,10 @@ export default function BrowseItinerariesPage() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const [client, setClient] = useState("");
+const [preparedBy, setPreparedBy] = useState("");
+const [reference, setReference] = useState("");
+
 
   async function load() {
     try {
@@ -24,14 +28,22 @@ export default function BrowseItinerariesPage() {
         return;
       }
 
-      const res = await fetch(
-  `/api/itinerary/list?q=${encodeURIComponent(query)}`,
+     const params = new URLSearchParams({
+  q: query,
+  client,
+  preparedBy,
+  reference,
+});
+
+const res = await fetch(
+  `/api/itinerary/list?${params.toString()}`,
   {
     headers: {
       Authorization: `Bearer ${session.access_token}`,
     },
   }
 );
+
 
 
       if (!res.ok) throw new Error("Request failed");
@@ -93,6 +105,36 @@ export default function BrowseItinerariesPage() {
         <h1 className="text-2xl font-semibold mb-6 text-black">
           Browse Itineraries
         </h1>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-8">
+  <input
+    value={query}
+    onChange={(e) => setQuery(e.target.value)}
+    placeholder="Destination"
+    className="border px-4 py-2 rounded text-black"
+  />
+
+  <input
+    value={client}
+    onChange={(e) => setClient(e.target.value)}
+    placeholder="Client name"
+    className="border px-4 py-2 rounded text-black"
+  />
+
+  <input
+    value={preparedBy}
+    onChange={(e) => setPreparedBy(e.target.value)}
+    placeholder="Prepared by (email)"
+    className="border px-4 py-2 rounded text-black"
+  />
+
+  <input
+    value={reference}
+    onChange={(e) => setReference(e.target.value)}
+    placeholder="Reference"
+    className="border px-4 py-2 rounded text-black"
+  />
+</div>
+
 
         {/* SEARCH */}
         <div className="flex gap-3 mb-8">

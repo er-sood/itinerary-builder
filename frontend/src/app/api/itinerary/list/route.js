@@ -4,10 +4,16 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { createClient } from "@supabase/supabase-js";
 
+
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 );
+
+const clientName = searchParams.get("client") || "";
+const preparedBy = searchParams.get("preparedBy") || "";
+const referenceBy = searchParams.get("referenceBy") || "";
+
 
 
 export async function GET(req) {
@@ -46,34 +52,65 @@ const token = authHeader.replace("Bearer ", "");
     const isAdmin = dbUser.role === "ADMIN";
 
     // build where condition
-    const baseSearch = q
-      ? {
-          destination: {
-            contains: q,
-            mode: "insensitive",
-          },
-        }
-      : {};
+    const filters = [];
+
+if (q) {
+  filters.push({
+    destination: {
+      contains: q,
+      mode: "insensitive",
+    },
+  });
+}
+
+if (client) {
+  filters.push({
+    clientName: {
+      contains: client,
+      mode: "insensitive",
+    },
+  });
+}
+
+if (reference) {
+  filters.push({
+    referenceBy: {
+      contains: reference,
+      mode: "insensitive",
+    },
+  });
+}
+
+if (preparedBy) {
+  filters.push({
+    user: {
+      email: {
+        contains: preparedBy,
+        mode: "insensitive",
+      },
+    },
+  });
+}
+
 
     let where;
 
-    if (isAdmin) {
-      // admin sees everything
-      where = baseSearch;
-    } else {
-      // staff: own OR final of others
-      where = {
-        AND: [
-          baseSearch,
-          {
-            OR: [
-              { createdBy: user.id },
-              { status: "FINAL" },
-            ],
-          },
+if (isAdmin) {
+  where = filters.length ? { AND: filters } : {};
+} else {
+  where = {
+    AND: [
+      ...(filters.length ? filters : []),
+      {
+        OR: [
+          { createdBy: user.id },
+          { status: "FINAL" },
         ],
-      };
-    }
+      },
+    ],
+  };
+}
+
 
     const items = await prisma.itinerary.findMany({
   where,
