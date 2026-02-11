@@ -589,7 +589,7 @@ export default function ItineraryPDF({ data = {} }) {
   return (
     <Document>
       <Page size="A4" style={styles.page} wrap>
-        console.log("PDF DATA:", data);
+        
 
 {/* HEADER */}
 <View fixed style={styles.header}>

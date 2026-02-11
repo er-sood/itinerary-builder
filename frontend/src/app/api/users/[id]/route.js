@@ -20,3 +20,4 @@ export async function DELETE(req, { params }) {
 
   return NextResponse.json({ success: true });
 }
+  

@@ -10,10 +10,12 @@ export default function InventoryPage() {
     const [viewItem, setViewItem] = useState(null);
 
   const [showModal, setShowModal] = useState(false);
+  const [editingId, setEditingId] = useState(null);
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
 const [typeFilter, setTypeFilter] = useState("ALL");
+const [role, setRole] = useState(null);
 
 
 const [form, setForm] = useState({
@@ -78,6 +80,32 @@ const [form, setForm] = useState({
     loadInventory();
   }, []);
 
+  useEffect(() => {
+  async function fetchRole() {
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      const res = await fetch("/api/auth/me", {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+
+      if (!res.ok) return;
+
+      const data = await res.json();
+      setRole(data.role);
+      console.log("INVENTORY ROLE CHECK:", data.role);
+    } catch (err) {
+      console.error("Failed to fetch role", err);
+    }
+  }
+
+  fetchRole();
+}, []);
+
   /* ================= SAVE PROPERTY ================= */
 
   async function saveProperty() {
@@ -86,17 +114,23 @@ const [form, setForm] = useState({
         data: { session },
       } = await supabase.auth.getSession();
 
-      const res = await fetch("/api/inventory/property", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${session.access_token}`,
-        },
-        body: JSON.stringify({
-          ...form,
-          starRating: form.type === "HOMESTAY" ? null : Number(form.starRating || 0),
-        }),
-      });
+      const method = editingId ? "PUT" : "POST";
+
+const res = await fetch("/api/inventory/property", {
+  method,
+  headers: {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${session.access_token}`,
+  },
+  body: JSON.stringify({
+    ...(editingId && { id: editingId }),
+    ...form,
+    starRating:
+      form.type === "HOMESTAY"
+        ? null
+        : Number(form.starRating || 0),
+  }),
+});
 
       if (!res.ok) {
         const err = await res.json();
@@ -104,14 +138,76 @@ const [form, setForm] = useState({
         return;
       }
 
-      setShowModal(false);
-      resetForm();
-      loadInventory();
+    setShowModal(false);
+    resetForm();
+    setEditingId(null);
+    loadInventory();
     } catch (e) {
       console.error(e);
       alert("Server error while saving");
     }
   }
+
+  async function handleDeleteProperty() {
+  if (!viewItem) return;
+
+  const confirmed = window.confirm(
+    "Are you sure you want to permanently delete this property?"
+  );
+
+  if (!confirmed) return;
+
+  try {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    const res = await fetch("/api/inventory/property", {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${session.access_token}`,
+      },
+      body: JSON.stringify({ id: viewItem.id }),
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      alert(err.error || "Failed to delete property");
+      return;
+    }
+
+    alert("Property deleted successfully");
+
+    setViewItem(null);
+    loadInventory(); // refresh list
+  } catch (err) {
+    console.error(err);
+    alert("Server error while deleting");
+  }
+}
+
+function handleEditProperty() {
+  if (!viewItem) return;
+
+  setEditingId(viewItem.id);
+
+  setForm({
+    name: viewItem.name || "",
+    type: viewItem.type || "",
+    country: viewItem.country || "",
+    state: viewItem.state || "",
+    city: viewItem.city || "",
+    starRating: viewItem.starRating || "",
+    contactPerson: viewItem.contactPerson || "",
+    contactPhone: viewItem.contactPhone || "",
+    websiteLink: viewItem.websiteLink || "",
+    approxPrice: viewItem.approxPrice || "",
+  });
+
+  setViewItem(null);  // close view modal
+  setShowModal(true); // open form modal
+}
 
   const filteredItems = items.filter((p) => {
   const text =
@@ -140,7 +236,11 @@ const [form, setForm] = useState({
               </h1>
 
               <button
-                onClick={() => setShowModal(true)}
+                onClick={() => {
+  setEditingId(null);   // reset edit mode
+  resetForm();          // clear old form data
+  setShowModal(true);   // open modal
+}}
                 className="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700"
               >
                 ➕ Add Property
@@ -243,8 +343,8 @@ const [form, setForm] = useState({
           <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
             <div className="bg-white rounded-2xl w-full max-w-2xl p-8 shadow-lg">
               <h2 className="text-xl font-semibold mb-6 text-black">
-                Add Property
-              </h2>
+  {editingId ? "Edit Property" : "Add Property"}
+</h2>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <input
@@ -310,12 +410,25 @@ const [form, setForm] = useState({
                   onChange={(e) => updateForm("contactPerson", e.target.value)}
                 />
 
+               <div className="md:col-span-2">
                 <input
                   placeholder="Contact Phone"
-                  className="border rounded-lg px-4 py-2"
+                  className={`border rounded-lg px-4 py-2 w-full ${
+                    role !== "ADMIN" && editingId
+                      ? "bg-gray-100 cursor-not-allowed"
+                      : ""
+                  }`}
                   value={form.contactPhone}
+                  disabled={role !== "ADMIN" && editingId}
                   onChange={(e) => updateForm("contactPhone", e.target.value)}
                 />
+
+                {role !== "ADMIN" && editingId && (
+                  <p className="text-xs text-gray-500 mt-1">
+                    Only admin can view and edit contact number.
+                  </p>
+                )}
+              </div>
 
                 <input
                   placeholder="Website / Google Maps Link"
@@ -348,7 +461,7 @@ const [form, setForm] = useState({
                   onClick={saveProperty}
                   className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
                 >
-                  Save Property
+                  {editingId ? "Update Property" : "Save Property"}
                 </button>
               </div>
             </div>
@@ -410,14 +523,32 @@ const [form, setForm] = useState({
         Added by {viewItem.user?.email || "Unknown"}
       </p>
 
-      <div className="flex justify-end mt-6">
-        <button
-          onClick={() => setViewItem(null)}
-          className="px-5 py-2 rounded-lg border"
-        >
-          Close
-        </button>
-      </div>
+<div className="flex justify-between mt-6">
+
+  <div className="flex gap-3">
+    <button
+      onClick={handleEditProperty}
+      className="px-5 py-2 rounded-lg bg-yellow-500 text-white hover:bg-yellow-600"
+    >
+      ✏️ Edit
+    </button>
+
+    <button
+      onClick={handleDeleteProperty}
+      className="px-5 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700"
+    >
+      🗑 Delete
+    </button>
+  </div>
+
+  <button
+    onClick={() => setViewItem(null)}
+    className="px-5 py-2 rounded-lg border"
+  >
+    Close
+  </button>
+
+</div>
     </div>
   </div>
 )}
