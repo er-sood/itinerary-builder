@@ -10,6 +10,8 @@ import { supabase } from "@/lib/supabaseClient";
 export default function DashboardPage() {
   const [role, setRole] = useState(null);
   const router = useRouter();
+  const [pendingLeads, setPendingLeads] = useState(0);
+
 
   useEffect(() => {
     async function loadRole() {
@@ -37,6 +39,8 @@ export default function DashboardPage() {
         const data = await res.json();
         console.log("DASHBOARD ROLE:", data.role);
         setRole(data.role);
+        setPendingLeads(data.pendingLeadsCount || 0);
+
       } catch (err) {
         console.error("ROLE LOAD ERROR", err);
       }
@@ -82,6 +86,18 @@ export default function DashboardPage() {
                 href="/inventory"
               />
 
+                <FeatureCard
+                title={isAdmin ? "Leads" : "My Leads"}
+                description={
+                  isAdmin
+                    ? "Create, assign and track customer leads"
+                    : "View and manage your assigned leads"
+                }
+                icon="📈"
+                href="/leads"
+                badge={pendingLeads}
+              />
+
               {/* ✅ ADMIN ONLY */}
               {isAdmin && (
                 <>
@@ -115,9 +131,15 @@ export default function DashboardPage() {
   );
 }
 
-function FeatureCard({ title, description, icon, href }) {
+function FeatureCard({ title, description, icon, href, badge }) {
   const CardContent = (
-    <div className="bg-white rounded-2xl p-8 text-center border shadow-sm hover:shadow-md hover:-translate-y-1 transition cursor-pointer h-full">
+    <div className="relative bg-white rounded-2xl p-8 text-center border shadow-sm hover:shadow-md hover:-translate-y-1 transition cursor-pointer h-full">
+{/* 🔔 BADGE GOES HERE */}
+      {badge > 0 && (
+        <div className="absolute top-4 right-4 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+          {badge}
+        </div>
+      )}
       <div className="w-14 h-14 mx-auto mb-4 flex items-center justify-center rounded-full bg-blue-100 text-2xl">
         {icon}
       </div>

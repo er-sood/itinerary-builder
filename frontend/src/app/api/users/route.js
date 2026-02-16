@@ -26,54 +26,29 @@ export async function GET(req) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    // Only ADMIN can fetch users
     const dbUser = await prisma.user.findUnique({
       where: { id: user.id },
     });
 
-    // ✅ PERFORMANCE STATS
-    const total = await prisma.itinerary.count({
-      where: { createdBy: user.id },
+    if (dbUser?.role !== "ADMIN") {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    const users = await prisma.user.findMany({
+      select: {
+        id: true,
+        email: true,
+        role: true,   // IMPORTANT
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
     });
 
-    const finalized = await prisma.itinerary.count({
-      where: { createdBy: user.id, status: "FINAL" },
-    });
-
-    let pendingLeadsCount = 0;
-
-if (dbUser.role === "ADMIN") {
-  pendingLeadsCount = await prisma.lead.count({
-    where: {
-      status: {
-        in: ["NEW", "ASSIGNED"],
-      },
-    },
-  });
-} else {
-  pendingLeadsCount = await prisma.lead.count({
-    where: {
-      assignedTo: user.id,
-      status: {
-        in: ["NEW", "ASSIGNED"],
-      },
-    },
-  });
-}
-
-return NextResponse.json({
-  id: user.id,
-  email: user.email,
-  role: dbUser?.role || "STAFF",
-  stats: {
-    total,
-    finalized,
-    draft: total - finalized,
-  },
-  pendingLeadsCount,
-});
-
+    return NextResponse.json(users);
   } catch (err) {
-    console.error("ME ERROR", err);
+    console.error("USERS FETCH ERROR:", err);
     return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }

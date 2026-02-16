@@ -35,6 +35,7 @@ model User {
   createdAt   DateTime    @default(now())
   itineraries Itinerary[] @relation("UserItineraries")
   properties  Property[] @relation("UserProperties")
+  leadsAssigned Lead[] @relation("UserAssignedLeads")
 }
 
 model Property {
@@ -60,4 +61,26 @@ model Property {
 enum PropertyType {
   HOTEL
   HOMESTAY
+}
+
+model Lead {
+  id            String   @id @default(uuid())
+
+  clientName    String
+  mobileNumber  String
+  destination   String
+  source        String
+
+  notes         String?
+
+  status        String   @default("NEW")
+
+  assignedTo    String?
+  assignedAt    DateTime?
+
+  createdBy     String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  assignedUser  User?    @relation("UserAssignedLeads", fields: [assignedTo], references: [id])
 }

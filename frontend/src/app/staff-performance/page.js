@@ -145,9 +145,53 @@ export default function StaffPerformancePage() {
                       {s.draft}
                     </span>
                   </div>
+                  {/* === LEADS SECTION === */}
+<hr className="my-3" />
+
+<div className="flex justify-between">
+  <span>Total Leads</span>
+  <span className="font-semibold">{s.totalLeads}</span>
+</div>
+
+<div className="flex justify-between">
+  <span>Converted</span>
+  <span className="font-semibold text-green-600">
+    {s.convertedLeads}
+  </span>
+</div>
+
+<div className="flex justify-between">
+  <span>Working</span>
+  <span className="font-semibold text-blue-600">
+    {s.workingLeads}
+  </span>
+</div>
+
+<div className="flex justify-between">
+  <span>Lost</span>
+  <span className="font-semibold text-red-600">
+    {s.lostLeads}
+  </span>
+</div>
+
                 </div>
 
                 <div className="mt-4">
+                  {/* Lead Conversion Rate */}
+<div className="mt-4">
+  <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+    <div
+      className="bg-blue-500 h-2"
+      style={{
+        width: `${s.leadConversionRate}%`,
+      }}
+    />
+  </div>
+  <p className="text-xs text-gray-500 mt-1">
+    Lead Conversion Rate {s.leadConversionRate}%
+  </p>
+</div>
+
                   <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
                     <div
                       className="bg-green-500 h-2"

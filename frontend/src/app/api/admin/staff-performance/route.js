@@ -52,32 +52,63 @@ console.log("STAFF PERF — SUPABASE ERROR:", error);
     }
 
     // ✅ fetch staff + stats
-    const users = await prisma.user.findMany({
-      where: { role: "STAFF" },
-      select: {
-        id: true,
-        email: true,
-        itineraries: {
-          select: { status: true },
-        },
-      },
-    });
+ const users = await prisma.user.findMany({
+  where: { role: "STAFF" },
+  select: {
+    id: true,
+    email: true,
+    itineraries: {
+      select: { status: true },
+    },
+    leadsAssigned: {   // ✅ MATCH YOUR SCHEMA
+      select: { status: true },
+    },
+  },
+});
 
-    const stats = users.map((u) => {
-      const total = u.itineraries.length;
-      const finalized = u.itineraries.filter(
-        (i) => i.status === "FINAL"
-      ).length;
-      const draft = total - finalized;
 
-      return {
-        id: u.id,
-        username: u.email,
-        total,
-        finalized,
-        draft,
-      };
-    });
+
+
+const stats = users.map((u) => {
+  const total = u.itineraries.length;
+  const finalized = u.itineraries.filter(
+    (i) => i.status === "FINAL"
+  ).length;
+  const draft = total - finalized;
+
+  const totalLeads = u.leadsAssigned.length;
+
+  const convertedLeads = u.leadsAssigned.filter(
+    (l) => l.status === "CONVERTED"
+  ).length;
+
+  const workingLeads = u.leadsAssigned.filter(
+    (l) => l.status === "WORK_IN_PROGRESS"
+  ).length;
+
+  const lostLeads = u.leadsAssigned.filter(
+    (l) => l.status === "NOT_CONVERTED"
+  ).length;
+
+  const leadConversionRate =
+    totalLeads === 0
+      ? 0
+      : Math.round((convertedLeads / totalLeads) * 100);
+
+  return {
+    id: u.id,
+    username: u.email,
+    total,
+    finalized,
+    draft,
+    totalLeads,
+    convertedLeads,
+    workingLeads,
+    lostLeads,
+    leadConversionRate,
+  };
+});
+
 
     return NextResponse.json(stats);
   } catch (err) {
