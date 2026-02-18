@@ -46,3 +46,15 @@ body {
 .animate-slideIn {
   animation: slideIn 0.25s ease-out forwards;
 }
+
+/* Remove number input arrows (Chrome, Safari, Edge) */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Remove number input arrows (Firefox) */
+input[type="number"] {
+  -moz-appearance: textfield;
+}
