@@ -44,7 +44,17 @@ export default function AuthGuard({ children }) {
     check();
   }, [router]);
 
-  if (checking) return null;
+  if (checking) {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-blue-100 to-blue-200">
+      <div className="flex flex-col items-center gap-6">
+        <div className="h-12 w-12 rounded-full border-4 border-blue-600 border-t-transparent animate-spin"></div>
+        <p className="text-sm text-gray-600">Loading...</p>
+      </div>
+    </div>
+  );
+}
+
 
   return (
     <AuthContext.Provider value={{ user }}>

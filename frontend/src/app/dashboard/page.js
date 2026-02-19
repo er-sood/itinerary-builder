@@ -49,7 +49,14 @@ export default function DashboardPage() {
     loadRole();
   }, [router]);
 
-  if (!role) return null; // wait till role loads
+  if (!role) {
+  return (
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="h-10 w-10 border-4 border-blue-600 border-t-transparent animate-spin rounded-full"></div>
+    </div>
+  );
+}
+
 
   const isAdmin = role?.toUpperCase() === "ADMIN";
 
